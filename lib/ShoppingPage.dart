@@ -28,8 +28,12 @@ class _ShoppingPageState extends State<ShoppingPage> {
     leading: FlutterLogo(),
     title: Text(data['Name']),
     trailing: IconButton(
-      icon: Icon(Icons.check),
-      onPressed: null,
+      icon: data['Lecker'] ? Icon(Icons.check, color: Colors.green) : Icon(Icons.check),
+      onPressed:() =>  Firestore.instance.runTransaction((transaction) async {
+        final freshSnapshot = await transaction.get(data.reference);
+        await transaction.update(data.reference, {'Lecker': freshSnapshot.data['Lecker'] ? false : true});
+      }),
     ),
   );
 }
+

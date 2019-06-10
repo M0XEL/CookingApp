@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'MyBottomNavigationBar.dart';
 import 'SearchPage.dart';
 
 class TrendingPage extends StatelessWidget {
+  Widget _handleAuthentification() => StreamBuilder<FirebaseUser>(
+    stream: FirebaseAuth.instance.onAuthStateChanged,
+    builder: (BuildContext context, snapshot) {
+      if (snapshot.hasData) {
+        var user = snapshot.data.providerData.first;
+        if (snapshot.data.isAnonymous) return Text(user.uid);
+      }
+      else {
+        FirebaseAuth.instance.signInAnonymously();
+        return Text('Signing in...');
+      }
+    },
+  );
+
   buildDrawerTextStyle() => TextStyle(
     fontSize: 16.0,
     fontWeight: FontWeight.bold,
@@ -18,7 +33,7 @@ class TrendingPage extends StatelessWidget {
             child: Row(
               children: <Widget>[
                 FlutterLogo(),
-                Text('     Profil'),
+                _handleAuthentification(),
               ],
             ),
           ),
