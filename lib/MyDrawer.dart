@@ -38,8 +38,8 @@ class MyDrawer extends StatelessWidget {
     stream: FirebaseAuth.instance.onAuthStateChanged,
     builder: (BuildContext context, snapshot) {
       if (snapshot.hasData) {
-        var user = snapshot.data.providerData.first;
-        if (snapshot.data.isAnonymous) return Text(user.uid);
+        var user = snapshot.data;
+        return Text(user.uid);
       }
       else {
         FirebaseAuth.instance.signInAnonymously();

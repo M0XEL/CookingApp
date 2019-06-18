@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'TrendingPage.dart';
+import 'LoginPage.dart';
 
 void main() => runApp(MyApp());
 
@@ -8,7 +8,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: 'CookingApp',
     theme: ThemeData(primarySwatch: Colors.blue),
-    home: TrendingPage(),
+    home: LoginPage(),
   );
 }
 
