@@ -11,6 +11,8 @@ class MyBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BottomNavigationBar(
     type: BottomNavigationBarType.fixed,
+    selectedFontSize: 13.0,
+    unselectedFontSize: 13.0,
     currentIndex: index,
     onTap: (index) {
       if (index == 0) Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
@@ -25,7 +27,7 @@ class MyBottomNavigationBar extends StatelessWidget {
       ),
       BottomNavigationBarItem(
         icon: Icon(Icons.shopping_basket),
-        title: Text('Einkaufsliste'),
+        title: Text('Einkauf'),
       ),
       BottomNavigationBarItem(
         icon: Icon(Icons.group),

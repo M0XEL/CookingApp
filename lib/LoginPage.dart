@@ -15,16 +15,12 @@ class _CalenderPageState extends State<LoginPage> {
   @override
   initState() {
     super.initState();
-    _authenticateUser();
-    Future(() {
-      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+    FirebaseAuth.instance.signInAnonymously().then((user) {
+      SharedPreferences.getInstance().then((sharedPreferences) {
+        sharedPreferences.setString('userId', user.uid).then((next) {
+          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+        });
+      });
     });
-  }
-
-  void _authenticateUser() async {
-    var user = await FirebaseAuth.instance.signInAnonymously();
-
-    SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
-    _sharedPreferences.setString('userId', user.uid);
   }
 }

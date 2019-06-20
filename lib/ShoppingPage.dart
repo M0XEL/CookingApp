@@ -24,18 +24,17 @@ class _ShoppingPageState extends State<ShoppingPage> {
   Widget build(BuildContext context) => Scaffold(
     drawer: MyDrawer(),
     bottomNavigationBar: MyBottomNavigationBar(index: 1),
+    floatingActionButton: FloatingActionButton(
+      child: Icon(Icons.add),
+      onPressed: null,
+    ),
     body: StreamBuilder<QuerySnapshot>(
       //stream: Firestore.instance.collection('Rezepte').snapshots(),
       stream: Firestore.instance.collection('users').document(userId).collection('shopping_card').snapshots(),
       builder: (context, snapshot) {
-        print(snapshot.connectionState);
         if (!snapshot.hasData) return LinearProgressIndicator();
-        
-        print(snapshot.data.documents);
 
-        if (snapshot.data.documents.isEmpty) {
-          return CircularProgressIndicator();
-        }
+        if (snapshot.data.documents.isEmpty) return CircularProgressIndicator();
 
         if (snapshot.data.documents.isNotEmpty) {
           return Text("snapshot.data.documents[0]['name']");
