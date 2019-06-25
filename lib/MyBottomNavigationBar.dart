@@ -23,7 +23,7 @@ class MyBottomNavigationBar extends StatelessWidget {
     items: <BottomNavigationBarItem>[
       BottomNavigationBarItem(
         icon: Icon(Icons.whatshot),
-        title: Text('Trend'),
+        title: Text('Rezepte'),
       ),
       BottomNavigationBarItem(
         icon: Icon(Icons.shopping_basket),
