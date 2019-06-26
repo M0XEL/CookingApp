@@ -4,6 +4,7 @@ import 'package:flutter/painting.dart';
 import 'MyDrawer.dart';
 import 'MyBottomNavigationBar.dart';
 import 'SearchPage.dart';
+import 'RecipePage.dart';
 
 class TrendingPage extends StatefulWidget {
   @override
@@ -41,35 +42,39 @@ class _TrendingPageState extends State<TrendingPage> {
                     }
                     else {
                       index--;
-                      return Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Stack(
-                            children: <Widget>[
-                              Image.asset('images/pizza.jpg'),
-                              Container(
-                                height: 210.0,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Container(
-                                      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                      child: Text(recipes[index].data['name'],
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 24.0,
-                                          fontWeight: FontWeight.bold,
+                      return MaterialButton(
+                        padding: EdgeInsets.all(0.0),
+                        child: Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Stack(
+                              children: <Widget>[
+                                Image.asset('images/pizza.jpg'),
+                                Container(
+                                  height: 210.0,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Container(
+                                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                        child: Text(recipes[index].data['name'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => RecipePage(recipes[index].documentID))),
                       );
                     }
                   }
