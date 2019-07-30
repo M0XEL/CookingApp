@@ -18,10 +18,10 @@ class _ShoppingPageState extends State<ShoppingPage> {
   _ShoppingPageState() {
     SharedPreferences.getInstance().then((_sharedPreferences) {
       userId = _sharedPreferences.getString('userId');
-      //Firestore.instance.collection('users').document(userId).setData({'name': 'James'});
-      //Firestore.instance.collection('users').document(userId).collection('shopping_card').document('pasta').setData({'name': 'pasta', 'liked': true});
+      /*Firestore.instance.collection('users').document(userId).setData({'name': 'James'});
+      Firestore.instance.collection('users').document(userId).collection('shopping_card').document('pasta').setData({'name': 'pasta', 'liked': true});
 
-      /*Firestore.instance.collection('ingredients').where('name', isEqualTo: 'Nudeln').getDocuments().then((snapshot) {
+      Firestore.instance.collection('ingredients').where('name', isEqualTo: 'Nudeln').getDocuments().then((snapshot) {
         Firestore.instance.collection('users').document(userId).collection('shopping_card').document(snapshot.documents.first.documentID).setData({'name': 'Nudeln','done': false});
       });*/
       setState(() {});
