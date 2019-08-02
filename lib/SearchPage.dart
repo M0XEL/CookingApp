@@ -5,10 +5,62 @@ class SearchPage extends StatefulWidget {
   _SearchPageState createState() => _SearchPageState();
 }
 
+class MySearchDelegate extends SearchDelegate {
+  @override
+  List<Widget> buildActions(BuildContext context) => [
+    IconButton(
+      icon: Icon(Icons.clear),
+      onPressed: () => query = '',
+    ),
+  ];
+
+  @override
+  Widget buildLeading(BuildContext context) => IconButton(
+    icon: Icon(Icons.arrow_back),
+    onPressed: () => close(context, null),
+  );
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return Text('result');
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    print(query);
+    return Text('Suggestions');
+  }
+}
+
 class _SearchPageState extends State<SearchPage> {
-@override
+  List<String> items = List<String>.generate(1000, (i) => 'Item $i');
+
+  @override
   Widget build(BuildContext context) => Material(
-    child: Stack(
+    child: ListView.builder(
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(items[index]),
+        );
+      },
+    ),
+    
+    
+    
+    /*IconButton(
+      icon: Icon(Icons.search),
+      onPressed: () {
+        showSearch(
+          context: context,
+          delegate: MySearchDelegate(),
+        );
+      },
+    ),*/
+    
+
+
+
+    /*Stack(
       children: <Widget>[
         Card(
           margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
@@ -55,6 +107,6 @@ class _SearchPageState extends State<SearchPage> {
           ],
         ),
       ],
-    ),
+    ),*/
   );
 }
