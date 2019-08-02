@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'TrendingPage.dart';
-import 'ShoppingPage.dart';
+//import 'ShoppingPage.dart';
 import 'GroupPage.dart';
-import 'CalenderPage.dart';
+//import 'CalenderPage.dart';
 
 class MyBottomNavigationBar extends StatelessWidget {
   final int index;
