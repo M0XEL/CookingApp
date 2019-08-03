@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:async';
 
+// TODO: add minutes after Headline
+
 class PreparationCard extends StatefulWidget {
   final recipeId;
   PreparationCard(this.recipeId);

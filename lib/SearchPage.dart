@@ -1,112 +1,76 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 class SearchPage extends StatefulWidget {
   @override
   _SearchPageState createState() => _SearchPageState();
 }
 
-class MySearchDelegate extends SearchDelegate {
-  @override
-  List<Widget> buildActions(BuildContext context) => [
-    IconButton(
-      icon: Icon(Icons.clear),
-      onPressed: () => query = '',
-    ),
-  ];
-
-  @override
-  Widget buildLeading(BuildContext context) => IconButton(
-    icon: Icon(Icons.arrow_back),
-    onPressed: () => close(context, null),
-  );
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return Text('result');
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    print(query);
-    return Text('Suggestions');
-  }
-}
-
 class _SearchPageState extends State<SearchPage> {
-  List<String> items = List<String>.generate(1000, (i) => 'Item $i');
+  Future<QuerySnapshot> future = Firestore.instance.collection('categories').getDocuments();
+  List<String> completeList = List<String>();
+  List<String> displayList = List<String>();
+  bool initList = true;
 
   @override
-  Widget build(BuildContext context) => Material(
-    child: ListView.builder(
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(items[index]),
-        );
-      },
-    ),
-    
-    
-    
-    /*IconButton(
-      icon: Icon(Icons.search),
-      onPressed: () {
-        showSearch(
-          context: context,
-          delegate: MySearchDelegate(),
-        );
-      },
-    ),*/
-    
+  Widget build(BuildContext context) => FutureBuilder<QuerySnapshot>(
+    future: future,
+    builder: (BuildContext context, AsyncSnapshot snapshot) {
+      switch (snapshot.connectionState) {
+        case ConnectionState.active:
+        
+        case ConnectionState.waiting:
+          return Center(child: CircularProgressIndicator());
+          break;
 
+        case ConnectionState.done:
+          if (initList) {
+            completeList = snapshot.data.documents.first['names'].cast<String>();
+            displayList.addAll(completeList);
+            initList = false;
+          }
 
-
-    /*Stack(
-      children: <Widget>[
-        Card(
-          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-          child: ListTile(
-            leading: Icon(Icons.dehaze),
-            title: Text('Search...',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-        ),
-        Column(
-          children: <Widget>[
-            Container(height: 100.0),
-            Divider(height: 0.0),
-            Container(
-              height: 70.0,
-              child: Row(
-                children: <Widget>[
-                  Expanded(child: FlutterLogo()),
-                  VerticalDivider(),
-                  Expanded(child: FlutterLogo()),
-                  VerticalDivider(),
-                  Expanded(child: FlutterLogo()),
-                ],
+          return Scaffold(
+            appBar: AppBar(
+              title: TextField(
+                onChanged: (string) {
+                  if (string.isNotEmpty) {
+                    List<String> newList = List<String>();
+                    completeList.forEach((item) {
+                      if (item.contains(string)) {
+                        newList.add(item);
+                      }
+                    });
+                    setState(() {
+                      displayList.clear();
+                      displayList.addAll(newList);
+                    });
+                  } 
+                  else {
+                    setState(() {
+                      displayList.clear();
+                      displayList.addAll(completeList); 
+                    });
+                  }
+                },
               ),
             ),
-            Divider(height: 0.0),
-            Container(
-              height: 70.0,
-              child: Row(
-                children: <Widget>[
-                  Expanded(child: Chip(label: Text('- #1 -'))),
-                  Expanded(child: Chip(label: Text('- #2 -'))),
-                  Expanded(child: Chip(label: Text('- #3 -'))),
-                  Expanded(child: Chip(label: Text('- #4 -'))),
-                ],
-              ),
+            body: ListView.builder(
+             itemCount: displayList.length,
+             itemBuilder: (context, index) {
+               return ListTile(
+                 title: Text(displayList[index]),
+               );
+             },
             ),
-            Slider(
-              value: 0.5,
-              onChanged: null,
-            ),
-          ],
-        ),
-      ],
-    ),*/
+          );
+          break;
+          
+        case ConnectionState.none:
+          return Text('Bad state :(');
+          break;
+      }
+    },
   );
 }
