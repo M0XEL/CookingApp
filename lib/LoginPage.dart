@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'LogInWithEmailPage.dart';
+import 'SearchPage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -36,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
 
   signInAnonymously() {
     FirebaseAuth.instance.signInAnonymously().then((user) {
-      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
       /*SharedPreferences.getInstance().then((sharedPreferences) {
         sharedPreferences.setString('userId', user.uid).then((next) {
         });
@@ -54,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           idToken: userAuthenticationData.idToken,
         );
         FirebaseAuth.instance.signInWithCredential(credential).then((user) {
-          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
         });
       });
     });
@@ -86,11 +87,11 @@ class _LoginPageState extends State<LoginPage> {
                 Container(height: 24.0),
                 buildButton('Log in with Email', signInWithEmailAndPassword),
                 Container(height: 24.0),
-                buildButton('Log in with Google',signInWithGoogle),
+                buildButton('Log in with Google', signInWithGoogle),
               ],
             );
           }
-          else return TrendingPage();
+          else return SearchPage();
           break;
           
         case ConnectionState.none:

@@ -2,13 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'RecipePage.dart';
+import 'MyBottomNavigationBar.dart';
 
 class SearchPage extends StatefulWidget {
   @override
   _SearchPageState createState() => _SearchPageState();
 }
 
-enum BodyType{filter, categorie, recipe}
+enum BodyType{trending, filter, categorie, recipe}
 
 class _SearchPageState extends State<SearchPage> {
   Future<List<QuerySnapshot>> future = Future.wait([
@@ -19,11 +20,12 @@ class _SearchPageState extends State<SearchPage> {
   List<String> displayList = List<String>();
   bool initList = true;
   TextEditingController textEditingController = TextEditingController();
-  BodyType bodyType = BodyType.filter;
+  BodyType bodyType = BodyType.trending;
   String searchString = '';
   Widget body = Container();
 
   changeSearchResults(string) {
+    print(textEditingController.text);
     if (string.isNotEmpty) {
       List<String> newList = List<String>();
       completeList.forEach((item) {
@@ -65,6 +67,82 @@ class _SearchPageState extends State<SearchPage> {
           }
 
           switch (bodyType) {
+            case BodyType.trending:
+            body = Scaffold(
+              bottomNavigationBar: MyBottomNavigationBar(index: 0),
+              body: StreamBuilder<QuerySnapshot>(
+                stream: Firestore.instance.collection('recipes').snapshots(),
+                builder: (context, snapshot1) {
+                  if (!snapshot1.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  } else {
+                    List<DocumentSnapshot> recipes = snapshot1.data.documents;
+                    return Container(
+                      child: Stack(
+                        children: <Widget>[
+                          ListView.builder(
+                            itemCount: recipes.length + 1,
+                            itemBuilder: (BuildContext context, int index) {
+                              if (index == 0) {
+                                return Container(
+                                  margin: EdgeInsets.only(top: 16.0, bottom: 16.0, left: 16.0),
+                                  child: Text('Trending',
+                                    style: TextStyle(
+                                      fontSize: 32.0,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.5
+                                    ),
+                                  ),
+                                );
+                              }
+                              else {
+                                index--;
+                                return MaterialButton(
+                                  padding: EdgeInsets.all(0.0),
+                                  child: Card(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: Stack(
+                                        children: <Widget>[
+                                          Image.asset('images/pizza.jpg'),
+                                          Container(
+                                            height: 210.0,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                Container(
+                                                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                                  child: Text(recipes[index].data['name'],
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 24.0,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => RecipePage(recipes[index].documentID))),
+                                );
+                              }
+                            }
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+            );
+              break;
+
             case BodyType.filter:
               body = Text('Place for filters');;
               break;
@@ -155,7 +233,10 @@ class _SearchPageState extends State<SearchPage> {
               backgroundColor: Colors.white,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => setState(() {
+                  bodyType = BodyType.trending;
+                  textEditingController.text = '';
+                }),
               ),
               title: Container(
                 decoration: BoxDecoration(
@@ -170,11 +251,13 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     Expanded(
                       child: TextField(
-                        autofocus: true,
                         controller: textEditingController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                         ),
+                        onTap: () => setState(() {
+                          bodyType = BodyType.filter;
+                        }),
                         onChanged: (string) => changeSearchResults(string),
                         onSubmitted: (string) => setState(() {
                           bodyType = BodyType.recipe;

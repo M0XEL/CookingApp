@@ -1,6 +1,7 @@
 import 'package:CookingApp/TrendingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'SearchPage.dart';
 
 class LogInWithEmailPage extends StatefulWidget {
   @override
@@ -65,7 +66,7 @@ class _LogInWithEmailPageState extends State<LogInWithEmailPage> {
                 email: emailController.text,
                 password: passwordController.text,
               ).then((user) {
-                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
               });
             },
           ),
@@ -91,7 +92,7 @@ class _LogInWithEmailPageState extends State<LogInWithEmailPage> {
                 email: emailController.text,
                 password: passwordController.text,
               ).then((user) {
-                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
               });
             }
           ),

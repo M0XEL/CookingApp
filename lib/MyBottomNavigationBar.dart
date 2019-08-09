@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'TrendingPage.dart';
+//import 'TrendingPage.dart';
 //import 'ShoppingPage.dart';
 import 'GroupPage.dart';
 //import 'CalenderPage.dart';
+import 'SearchPage.dart';
 
 class MyBottomNavigationBar extends StatelessWidget {
   final int index;
@@ -15,7 +16,7 @@ class MyBottomNavigationBar extends StatelessWidget {
     unselectedFontSize: 13.0,
     currentIndex: index,
     onTap: (index) {
-      if (index == 0) Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+      if (index == 0) Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
       //else if (index == 1) Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ShoppingPage()));
       else if (index == 1) Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => GroupPage()));
       //else if (index == 3) Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => CalenderPage()));
