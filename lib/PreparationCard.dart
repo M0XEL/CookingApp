@@ -44,35 +44,41 @@ class _PreparationCardState extends State<PreparationCard> {
                 DocumentSnapshot document2 = snapshot.data.documents.firstWhere((document) {
                   return document.documentID == recipeId;
                 });
-                steps = document2['steps'].cast<String>();
 
-                List<Widget> preparationList = List<Widget>();
-                for (int i = 0; i < steps.length; i++) {
-                  preparationList.add(
-                    ListTile(
-                      leading: Container(
-                        width: 32.0,
-                        height: 32.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.orange,
-                        ),
-                        child: Center(
-                          child: Text(i.toString(),
-                            style: TextStyle(
-                              color: Colors.white,
+                if (document2['steps'] == null) {
+                  return Container();
+                }
+                else {
+                  steps = document2['steps'].cast<String>();
+
+                  List<Widget> preparationList = List<Widget>();
+                  for (int i = 0; i < steps.length; i++) {
+                    preparationList.add(
+                      ListTile(
+                        leading: Container(
+                          width: 32.0,
+                          height: 32.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.orange,
+                          ),
+                          child: Center(
+                            child: Text(i.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      title: Text(steps[i]),
-                    )
+                        title: Text(steps[i]),
+                      )
+                    );
+                  }
+
+                  return Column(
+                    children: preparationList,
                   );
                 }
-
-                return Column(
-                  children: preparationList,
-                );
                 break;
 
               case ConnectionState.none:

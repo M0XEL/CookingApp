@@ -49,86 +49,91 @@ class _IngredientCardState extends State<IngredientCard> {
                 break;
 
               case ConnectionState.done:
-                ingredients.clear();
-                snapshot.data[0].documents.forEach((document) {
-                  Ingredient ingredient = Ingredient();
-                  ingredient.amount = document['amount'];
-                  DocumentSnapshot document3 = snapshot.data[1].documents.firstWhere((document2) {
-                    return document2.documentID == document['ingredientId'];
-                  });
-                  ingredient.name = document3['name'];
-                  ingredients.add(ingredient);
-                });
-                if (servings == 0) {
-                  DocumentSnapshot document5 = snapshot.data[2].documents.firstWhere((document4) {
-                    return document4.documentID == recipeId;
-                  });
-                  servings = document5['servings'];
+                if (snapshot.data[0].documents.length == 0) {
+                  return Container();
                 }
+                else {
+                  ingredients.clear();
+                  snapshot.data[0].documents.forEach((document) {
+                    Ingredient ingredient = Ingredient();
+                    ingredient.amount = document['amount'];
+                    DocumentSnapshot document3 = snapshot.data[1].documents.firstWhere((document2) {
+                      return document2.documentID == document['ingredientId'];
+                    });
+                    ingredient.name = document3['name'];
+                    ingredients.add(ingredient);
+                  });
+                  if (servings == 0) {
+                    DocumentSnapshot document5 = snapshot.data[2].documents.firstWhere((document4) {
+                      return document4.documentID == recipeId;
+                    });
+                    servings = document5['servings'];
+                  }
 
-                List<Widget> ingredientList = List<Widget>();
-                ingredients.forEach((ingredient) {
-                  ingredientList.add(
-                    Row(
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(right: 8.0),
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          child: Text((servings * ingredient.amount).toString() + 'g',
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            padding: EdgeInsets.only(left: 8.0),
-                            child: Text(ingredient.name,
+                  List<Widget> ingredientList = List<Widget>();
+                  ingredients.forEach((ingredient) {
+                    ingredientList.add(
+                      Row(
+                        children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.only(right: 8.0),
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            child: Text((servings * ingredient.amount).toString() + 'g',
+                              textAlign: TextAlign.right,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                  ingredientList.add(Container(height: 8.0));
-                });
-
-                return Column(
-                  children: <Widget>[
-                    Column(
-                      children: ingredientList,
-                    ),
-                    ListTile(
-                      leading: Container(width: 40),
-                      title: Row(
-                        children: <Widget>[
-                          buildText('for'),
-                          IconButton(
-                            icon: Icon(Icons.remove, color: Colors.orangeAccent),
-                            onPressed: () => setState(() => servings > 1 ? servings-- : servings),
-                          ),
-                          Container(
-                            child: buildText(servings.toString()),
-                            padding: EdgeInsets.all(12.0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Text(ingredient.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.add, color: Colors.orangeAccent),
-                            onPressed: () => setState(() => servings++),
-                          ),
-                          buildText('servings'),
                         ],
                       ),
-                    ),
-                  ],
-                );
+                    );
+                    ingredientList.add(Container(height: 8.0));
+                  });
+
+                  return Column(
+                    children: <Widget>[
+                      Column(
+                        children: ingredientList,
+                      ),
+                      ListTile(
+                        leading: Container(width: 40),
+                        title: Row(
+                          children: <Widget>[
+                            buildText('for'),
+                            IconButton(
+                              icon: Icon(Icons.remove, color: Colors.orangeAccent),
+                              onPressed: () => setState(() => servings > 1 ? servings-- : servings),
+                            ),
+                            Container(
+                              child: buildText(servings.toString()),
+                              padding: EdgeInsets.all(12.0),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add, color: Colors.orangeAccent),
+                              onPressed: () => setState(() => servings++),
+                            ),
+                            buildText('servings'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }
                 break;
 
               case ConnectionState.none:
