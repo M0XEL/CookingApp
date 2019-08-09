@@ -42,7 +42,6 @@ class MyDrawer extends StatelessWidget {
         return Text(user.uid);
       }
       else {
-        FirebaseAuth.instance.signInAnonymously();
         return Text('Signing in...');
       }
     },

@@ -1,17 +1,16 @@
 import 'package:CookingApp/TrendingPage.dart';
-import 'package:firebase_auth/firebase_auth.dart' as prefix0;
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'LogInWithEmailPage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
-  _CalenderPageState createState() => _CalenderPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _CalenderPageState extends State<LoginPage> {
-  buildButton(String label, void action) => MaterialButton(
+class _LoginPageState extends State<LoginPage> {
+  buildButton(String label, Function action) => MaterialButton(
     child: Container(
       height: 48.0,
       decoration: BoxDecoration(
@@ -32,31 +31,20 @@ class _CalenderPageState extends State<LoginPage> {
         ],
       ),
     ),
-    onPressed: () => action,
+    onPressed: () => action(),
   );
 
   signInAnonymously() {
     FirebaseAuth.instance.signInAnonymously().then((user) {
-      SharedPreferences.getInstance().then((sharedPreferences) {
+      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+      /*SharedPreferences.getInstance().then((sharedPreferences) {
         sharedPreferences.setString('userId', user.uid).then((next) {
-          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
         });
-      });
+      });*/
     });
   }
 
-  signInWithEmailAndPassword() {
-    /*FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: 'example@gmail.com',
-      password: '123456',
-    );*/
-    FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: 'example@gmail.com',
-      password: '123456',
-    ).then((user) {
-      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
-    });
-  }
+  signInWithEmailAndPassword() => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LogInWithEmailPage()));
 
   signInWithGoogle() {
     GoogleSignIn().signIn().then((user) {
@@ -85,8 +73,8 @@ class _CalenderPageState extends State<LoginPage> {
           break;
 
         case ConnectionState.done:
-          print(snapshot.data);
-          //if (snapshot.data == null) {
+          //FirebaseAuth.instance.signOut(); // for debugging
+          if (snapshot.data == null) {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -94,15 +82,15 @@ class _CalenderPageState extends State<LoginPage> {
                   size: 112.0,
                 ),
                 Container(height: 96.0),
-                buildButton('Log in anonymously', signInAnonymously()),
+                buildButton('Log in anonymously', signInAnonymously),
                 Container(height: 24.0),
-                buildButton('Log in with Email', signInWithEmailAndPassword()),
+                buildButton('Log in with Email', signInWithEmailAndPassword),
                 Container(height: 24.0),
-                buildButton('Log in with Google',signInWithGoogle()),
+                buildButton('Log in with Google',signInWithGoogle),
               ],
             );
-          //}
-          //else return Container();// Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => TrendingPage()));
+          }
+          else return TrendingPage();
           break;
           
         case ConnectionState.none:

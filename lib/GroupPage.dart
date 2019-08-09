@@ -12,7 +12,6 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    drawer: MyDrawer(),
     bottomNavigationBar: MyBottomNavigationBar(index: 1),
     body: Column(
       children: <Widget>[
