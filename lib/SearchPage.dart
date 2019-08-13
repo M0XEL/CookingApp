@@ -1,6 +1,8 @@
+import 'package:CookingApp/LoginPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:async';
 import 'RecipePage.dart';
 import 'MyBottomNavigationBar.dart';
@@ -287,7 +289,56 @@ class _SearchPageState extends State<SearchPage> {
                             onPressed: () => showModalBottomSheet(
                               context: context,
                               builder: (context) {
-                                return Text('Settings');
+                                return ListView(
+                                  children: <Widget>[
+                                    ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundImage: NetworkImage(user.data.photoUrl),
+                                      ),
+                                      title: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(user.data.displayName),
+                                          Text(user.data.email),
+                                        ],
+                                      ),
+                                      trailing: FlatButton(
+                                        child: Text('Logout'),
+                                        onPressed: () {
+                                          FirebaseAuth.instance.signOut();
+                                          GoogleSignIn().signOut();
+                                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (BuildContext context) => LoginPage()), (Route<dynamic> route) => false);
+                                        },
+                                      ),
+                                    ),
+                                    Divider(),
+                                    FlatButton(
+                                      child: ListTile(
+                                        leading: Icon(Icons.settings),
+                                        title: Text('Settings'),
+                                      ),
+                                      onPressed: null,
+                                    ),
+                                    Divider(),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        FlatButton(
+                                          child: Text('Datenschutzerklärung'),
+                                          onPressed: null,
+                                        ),
+                                        IconButton(
+                                          icon: FlutterLogo(),
+                                          onPressed: null,
+                                        ),
+                                        FlatButton(
+                                          child: Text('Nutzungsbedingungen'),
+                                          onPressed: null,
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                );
                               }
                             ),
                           );
