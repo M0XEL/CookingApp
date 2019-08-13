@@ -4,13 +4,18 @@ import 'package:flutter/material.dart';
 import 'SearchPage.dart';
 
 class LogInWithEmailPage extends StatefulWidget {
+  final Function updateDatabase;
+  LogInWithEmailPage(this.updateDatabase);
+
   @override
-  _LogInWithEmailPageState createState() => _LogInWithEmailPageState();
+  _LogInWithEmailPageState createState() => _LogInWithEmailPageState(updateDatabase);
 }
 
 class _LogInWithEmailPageState extends State<LogInWithEmailPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  Function updateDatabse;
+  _LogInWithEmailPageState(this.updateDatabse);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -66,6 +71,7 @@ class _LogInWithEmailPageState extends State<LogInWithEmailPage> {
                 email: emailController.text,
                 password: passwordController.text,
               ).then((user) {
+                updateDatabse();
                 Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
               });
             },
@@ -92,6 +98,7 @@ class _LogInWithEmailPageState extends State<LogInWithEmailPage> {
                 email: emailController.text,
                 password: passwordController.text,
               ).then((user) {
+                updateDatabse();
                 Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
               });
             }

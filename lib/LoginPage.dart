@@ -1,4 +1,5 @@
 import 'package:CookingApp/TrendingPage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -37,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
   signInAnonymously() {
     FirebaseAuth.instance.signInAnonymously().then((user) {
+      updateDatabase(user);
       Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
       /*SharedPreferences.getInstance().then((sharedPreferences) {
         sharedPreferences.setString('userId', user.uid).then((next) {
@@ -45,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  signInWithEmailAndPassword() => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LogInWithEmailPage()));
+  signInWithEmailAndPassword() => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LogInWithEmailPage(updateDatabase)));
 
   signInWithGoogle() {
     GoogleSignIn().signIn().then((user) {
@@ -55,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           idToken: userAuthenticationData.idToken,
         );
         FirebaseAuth.instance.signInWithCredential(credential).then((user) {
+          updateDatabase(user);
           Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
         });
       });
@@ -101,4 +104,15 @@ class _LoginPageState extends State<LoginPage> {
     },
     ),
   );
+
+  updateDatabase(FirebaseUser user) {
+    Firestore.instance.collection('users').document().get().then((document) {
+      if (!document.exists) {
+        Firestore.instance.collection('users').document(user.uid).setData({
+          'name': user.displayName,
+          'photoUrl': user.photoUrl,
+        });
+      }
+    });
+  }
 }
