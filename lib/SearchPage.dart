@@ -313,6 +313,8 @@ class _SearchPageState extends State<SearchPage> {
                                     ),
                                     Divider(),
                                     FlatButton(
+                                      padding: EdgeInsets.all(0.0),
+                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                       child: ListTile(
                                         leading: Icon(Icons.settings),
                                         title: Text('Settings'),
@@ -324,7 +326,9 @@ class _SearchPageState extends State<SearchPage> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[
                                         FlatButton(
-                                          child: Text('Datenschutzerklärung'),
+                                          child: Text('Datenschutzerklärung',
+                                            textScaleFactor: 0.8,
+                                          ),
                                           onPressed: null,
                                         ),
                                         IconButton(
@@ -332,7 +336,9 @@ class _SearchPageState extends State<SearchPage> {
                                           onPressed: null,
                                         ),
                                         FlatButton(
-                                          child: Text('Nutzungsbedingungen'),
+                                          child: Text('Nutzungsbedingungen',
+                                            textScaleFactor: 0.8,
+                                          ),
                                           onPressed: null,
                                         ),
                                       ],
