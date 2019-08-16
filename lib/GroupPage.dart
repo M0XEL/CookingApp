@@ -1,3 +1,4 @@
+import 'package:CookingApp/GroupDetailPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class _GroupPageState extends State<GroupPage> {
                 stream: Firestore.instance.collection('groups').snapshots(),
                 builder: (context, groupSnapshot) {
                   if (groupSnapshot.connectionState == ConnectionState.active) {
+                    groups.clear();
                     groupSnapshot.data.documents.forEach((document) {
                       userSnapshot.data['groupIds'].forEach((id) {
                         if (document.documentID == id) {
@@ -57,21 +59,50 @@ class _GroupPageState extends State<GroupPage> {
                           ),
                         ),
                         floatingActionButton: FloatingActionButton(
-                          child: Icon(Icons.list),
-                          onPressed: () => showModalBottomSheet(
+                          child: Icon(Icons.keyboard_arrow_up),
+                          onPressed: () => showModalBottomSheet(//DraggableScrollSheet
                             context: context,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
                             builder: (context) {
                               return ListView.builder(
-                                itemCount: groups.length,
+                                itemCount: groups.length + 1,
                                 itemBuilder: (context, index) {
-                                  return ListTile(
-                                    leading: FlutterLogo(),
-                                    title: Text(groups[index]['name']),
-                                    trailing: IconButton(
-                                      icon: Icon(Icons.edit),
-                                      onPressed: null,
-                                    ),
-                                  );
+                                  if (index == groups.length) {
+                                    return MaterialButton(
+                                      child: ListTile(
+                                        leading: Icon(Icons.add),
+                                        title: Text('Neue Gruppe erstellen'),
+                                      ),
+                                      onPressed: () {
+                                        Firestore.instance.collection('groups').add({'name': '-'}).then((groupReference) {
+                                          Firestore.instance.runTransaction((transaction) async {
+                                            transaction.set(groupReference, {
+                                              'name': 'Neue Gruppe',
+                                              'memberIds': [userSnapshot.data.documentID],
+                                            });
+                                          });
+                                          Firestore.instance.runTransaction((transaction) async {
+                                            DocumentSnapshot freshUserSnapshot = await transaction.get(userSnapshot.data.reference);
+                                            List<String> groupIds = List<String>();
+                                            groupIds.addAll(freshUserSnapshot['groupIds'].cast<String>());
+                                            groupIds.add(groupReference.documentID);
+                                            transaction.update(userSnapshot.data.reference, {'groupIds': groupIds});
+                                          });
+                                        });
+                                        
+                                      }
+                                    );
+                                  }
+                                  else {
+                                    return ListTile(
+                                      leading: FlutterLogo(),
+                                      title: Text(groups[index]['name']),
+                                      trailing: IconButton(
+                                        icon: Icon(Icons.edit),
+                                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => GroupDetailPage(groups[index]))),
+                                      ),
+                                    );
+                                  }
                                 },
                               );
                             },
@@ -103,41 +134,5 @@ class _GroupPageState extends State<GroupPage> {
       }
       else return Center(child: CircularProgressIndicator());
     }
-
   );
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  /*Scaffold(
-    bottomNavigationBar: MyBottomNavigationBar(index: 1),
-    body: StreamBuilder<QuerySnapshot>(
-      stream: Firestore.instance.collection('users').snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active) {
-          return ListView.builder(
-            itemCount: snapshot.data.documents.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: Image.network(snapshot.data.documents[index]['photoUrl']),
-                title: FlatButton(
-                  child: Text(snapshot.data.documents[index]['name']),
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage())),
-                ),
-              );
-            },
-          );
-        }
-        else return CircularProgressIndicator();
-      },
-    ),
-  );*/
 }
