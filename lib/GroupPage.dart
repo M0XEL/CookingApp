@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'MyBottomNavigationBar.dart';
+import 'RecipePage.dart';
 
 class GroupPage extends StatefulWidget {
   @override
@@ -110,7 +111,78 @@ class _GroupPageState extends State<GroupPage> {
                         ),
                         body: TabBarView(
                           children: <Widget>[
-                            Text('Abstimmungen :)'),
+                            StreamBuilder<DocumentSnapshot>(
+                              stream: Firestore.instance.collection('recipe_votes').document(groups.first.documentID).snapshots(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.active) {
+                                  List<String> recipeIds = snapshot.data.data['recipes'].cast<String>();
+                                  return StreamBuilder<QuerySnapshot>(
+                                    stream: Firestore.instance.collection('recipes').snapshots(),
+                                    builder: (context, snapshot1) {
+                                      if (!snapshot1.hasData) {
+                                        return Center(child: CircularProgressIndicator());
+                                      } else {
+                                        List<DocumentSnapshot> recipes = List<DocumentSnapshot>();
+                                        snapshot1.data.documents.forEach((d) {
+                                          recipeIds.forEach((r) {
+                                            if (d.documentID == r) {
+                                              recipes.add(d);
+                                            }
+                                          });
+                                        });
+                                        return Container(
+                                          child: Stack(
+                                            children: <Widget>[
+                                              ListView.builder(
+                                                itemCount: recipes.length,
+                                                itemBuilder: (BuildContext context, int index) {
+                                                  
+                                                  return MaterialButton(
+                                                    padding: EdgeInsets.all(0.0),
+                                                    child: Card(
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                                                      child: ClipRRect(
+                                                        borderRadius: BorderRadius.circular(8.0),
+                                                        child: Stack(
+                                                          children: <Widget>[
+                                                            Image.asset('images/pizza.jpg'),
+                                                            Container(
+                                                              height: 210.0,
+                                                              child: Column(
+                                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: <Widget>[
+                                                                  Container(
+                                                                    margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                                                    child: Text(recipes[index].data['name'],
+                                                                      style: TextStyle(
+                                                                        color: Colors.white,
+                                                                        fontSize: 24.0,
+                                                                        fontWeight: FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => RecipePage(recipes[index].documentID))),
+                                                  );
+                                                  
+                                                }
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  );
+                                }
+                              },
+                            ),
                             ListView.builder(
                               itemCount: 4,
                               itemBuilder: (context, index) {
