@@ -140,13 +140,15 @@ class _RecipePageState extends State<RecipePage> {
                                 child: ListTile(
                                   title: Text(groups[index].data['name']),
                                 ),
-                                onPressed: () => Firestore.instance.collection('recipe_votes').document(groups[index].documentID).get().then((document) {
+                                onPressed: () => Firestore.instance.collection('recipe_votes').document(groups[index].documentID).collection('deadlines').document('today').get().then((document) {
                                   Firestore.instance.runTransaction((transaction) async {
                                     DocumentSnapshot freshSnapshot = await transaction.get(document.reference);
-                                    List<String> recipeVotes = List<String>();
-                                    recipeVotes.addAll(freshSnapshot['recipes'].cast<String>());
-                                    recipeVotes.add(recipeId);
-                                    transaction.update(document.reference, {'recipes': recipeVotes});
+                                    Map<String, int> recipes = Map<String, int>();
+                                    recipes.addAll(freshSnapshot['recipes'].cast<String, int>());
+                                    List<MapEntry<String, int>> l = List<MapEntry<String, int>>();
+                                    l.add(MapEntry(recipeId, 0));
+                                    recipes.addEntries(l);
+                                    transaction.update(document.reference, {'recipes': recipes});
                                   });
                                   Navigator.pop(context);
                                 })

@@ -61,7 +61,7 @@ class _GroupPageState extends State<GroupPage> {
                         ),
                         floatingActionButton: FloatingActionButton(
                           child: Icon(Icons.keyboard_arrow_up),
-                          onPressed: () => showModalBottomSheet(//DraggableScrollSheet
+                          onPressed: () => showModalBottomSheet(
                             context: context,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
                             builder: (context) {
@@ -112,10 +112,10 @@ class _GroupPageState extends State<GroupPage> {
                         body: TabBarView(
                           children: <Widget>[
                             StreamBuilder<DocumentSnapshot>(
-                              stream: Firestore.instance.collection('recipe_votes').document(groups.first.documentID).snapshots(),
+                              stream: Firestore.instance.collection('recipe_votes').document(groups.first.documentID).collection('deadlines').document('today').snapshots(),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState == ConnectionState.active) {
-                                  List<String> recipeIds = snapshot.data.data['recipes'].cast<String>();
+                                  Map<String, num> recipeIds = snapshot.data.data['recipes'].cast<String, num>();
                                   return StreamBuilder<QuerySnapshot>(
                                     stream: Firestore.instance.collection('recipes').snapshots(),
                                     builder: (context, snapshot1) {
@@ -124,8 +124,8 @@ class _GroupPageState extends State<GroupPage> {
                                       } else {
                                         List<DocumentSnapshot> recipes = List<DocumentSnapshot>();
                                         snapshot1.data.documents.forEach((d) {
-                                          recipeIds.forEach((r) {
-                                            if (d.documentID == r) {
+                                          recipeIds.keys.forEach((key) {
+                                            if (d.documentID == key) {
                                               recipes.add(d);
                                             }
                                           });
@@ -152,6 +152,37 @@ class _GroupPageState extends State<GroupPage> {
                                                                 mainAxisAlignment: MainAxisAlignment.end,
                                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                                 children: <Widget>[
+                                                                  Container(
+                                                                    margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                                                    child: Text(recipeIds[recipes[index].documentID].toString(),
+                                                                      style: TextStyle(
+                                                                        color: Colors.greenAccent,
+                                                                        fontSize: 24.0,
+                                                                        fontWeight: FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  IconButton(
+                                                                    icon: Icon(Icons.thumb_up),
+                                                                    onPressed: () => //Firestore.instance.collection('recipe_votes').document(groups[index].documentID).collection('deadlines').document('today').get().then((document) {
+                                                                      Firestore.instance.runTransaction((transaction) async {
+                                                                        DocumentSnapshot freshSnapshot = await transaction.get(snapshot.data.reference);
+                                                                        List<String> votes = List<String>();
+                                                                        votes.addAll(freshSnapshot['hasVoted'].cast<String>());
+                                                                        /*if (votes.contains(user.data.uid)) {
+                                                                          transaction.update(snapshot.data.reference, {'hasVoted': votes});
+                                                                        }
+                                                                        else {*/
+                                                                          Map<String, int> recipes2 = Map<String, int>();
+                                                                          recipes2.addAll(freshSnapshot['recipes'].cast<String, int>());
+                                                                          recipes2.update(recipes[index].documentID, (votes) => ++votes);
+                                                                          transaction.update(snapshot.data.reference, {'recipes': recipes2});
+                                                                          votes.add(user.data.uid);
+                                                                          //transaction.update(snapshot.data.reference, {'hasVoted': votes});
+                                                                        //}
+                                                                      }),
+                                                                    //}),
+                                                                  ),
                                                                   Container(
                                                                     margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                                                                     child: Text(recipes[index].data['name'],
