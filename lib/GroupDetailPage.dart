@@ -1,93 +1,161 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 class GroupDetailPage extends StatefulWidget {
-  DocumentSnapshot group;
-  GroupDetailPage(this.group);
+  final DocumentReference groupReference;
+  GroupDetailPage(this.groupReference);
   @override
-  _GroupDetailPageState createState() => _GroupDetailPageState(group);
+  _GroupDetailPageState createState() => _GroupDetailPageState(groupReference);
 }
 
 class _GroupDetailPageState extends State<GroupDetailPage> {
+  DocumentReference groupReference;
   DocumentSnapshot group;
   List<String> member;
-  _GroupDetailPageState(this.group);
+  Future future;
+  _GroupDetailPageState(this.groupReference);
+
+  @override
+  void initState() {
+    super.initState();
+    future = Future(() async {
+      group = await Firestore.instance.collection('groups').document(groupReference.documentID).get();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    List<String> memberIds = group['memberIds'].cast<String>();
+    return FutureBuilder(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          List<String> memberIds = group['memberIds'].cast<String>();
+          return Scaffold(
+            appBar: AppBar(
+              title:Text(group['name']),
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) {
+                      TextEditingController controller = TextEditingController();
+                      controller.text = group['name'];
 
-    return Scaffold(
-      appBar: AppBar(
-        title:Text(group['name']),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.group_add),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (context) {
-                TextEditingController controller = TextEditingController();
-                controller.text = 'ernijo67@gmail.com';
+                      return Material(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            TextFormField(
+                              autofocus: true,
+                              keyboardType: TextInputType.text,
+                              controller: controller,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                FlatButton(
+                                  child: Text('Close'),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                                FlatButton(
+                                  child: Text('Apply'),
+                                  onPressed: () {
+                                    Firestore.instance.runTransaction((transaction) async {
+                                      DocumentSnapshot freshSnapshot = await transaction.get(group.reference);
+                                      freshSnapshot.data['name'] = controller.text;
+                                      transaction.update(group.reference, freshSnapshot.data);
+                                    });
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.group_add),
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) {
+                      TextEditingController controller = TextEditingController();
+                      controller.text = 'ernijo67@gmail.com';
 
-                return Material(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      TextFormField(
-                        autofocus: true,
-                        keyboardType: TextInputType.emailAddress,
-                        controller: controller,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          FlatButton(
-                            child: Text('Close'),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                          FlatButton(
-                            child: Text('Apply'),
+                      return Material(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            TextFormField(
+                              autofocus: true,
+                              keyboardType: TextInputType.emailAddress,
+                              controller: controller,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                FlatButton(
+                                  child: Text('Close'),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                                FlatButton(
+                                  child: Text('Apply'),
+                                  onPressed: () {
+                                    Firestore.instance.collection('users').getDocuments().then((users) {
+                                      DocumentSnapshot user = users.documents.firstWhere((user) => user['emailAddress'] == controller.text);
+                                      addUser(user);
+                                      Navigator.pop(context);
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  ),
+                )
+              ],
+            ),
+            body: ListView.builder(
+              itemCount: memberIds.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: FutureBuilder<DocumentSnapshot>(
+                    future: Firestore.instance.collection('users').document(memberIds[index]).get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return ListTile(
+                          title: Text(snapshot.data['name']),
+                          trailing: IconButton(
+                            icon: Icon(Icons.remove),
                             onPressed: () {
-                              Firestore.instance.collection('users').getDocuments().then((users) {
-                                DocumentSnapshot user = users.documents.firstWhere((user) => user['emailAddress'] == controller.text);
-                                addUser(user);
-                                Navigator.pop(context);
-                              });
+                              removeUser(snapshot.data);
                             },
                           ),
-                        ],
-                      ),
-                    ],
+                        );
+                      }
+                      else return Text('Loading...');
+                    },
                   ),
                 );
-              }
-            ),
-          )
-        ],
-      ),
-      body: ListView.builder(
-        itemCount: memberIds.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: FutureBuilder<DocumentSnapshot>(
-              future: Firestore.instance.collection('users').document(memberIds[index]).get(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return ListTile(
-                    title: Text(snapshot.data['name']),
-                    trailing: IconButton(
-                      icon: Icon(Icons.remove),
-                      onPressed: () {
-                        removeUser(snapshot.data);
-                      },
-                    ),
-                  );
-                }
-                else return Text('Loading...');
               },
+            )
+          );
+        }
+        else {
+          return Material(
+            child: Center(
+              child: CircularProgressIndicator(),
             ),
           );
-        },
-      )
+        }
+      },
     );
   }
     
