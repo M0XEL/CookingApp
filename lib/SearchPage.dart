@@ -89,7 +89,7 @@ class _SearchPageState extends State<SearchPage> {
                               if (index == 0) {
                                 return Container(
                                   margin: EdgeInsets.only(top: 16.0, bottom: 16.0, left: 16.0),
-                                  child: Text('Trending',
+                                  child: Text('Beliebt',
                                     style: TextStyle(
                                       fontSize: 32.0,
                                       fontWeight: FontWeight.bold,
@@ -106,29 +106,31 @@ class _SearchPageState extends State<SearchPage> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(8.0),
-                                      child: Stack(
-                                        children: <Widget>[
-                                          Image.asset('images/pizza.jpg'),
-                                          Container(
-                                            height: 210.0,
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.end,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: <Widget>[
-                                                Container(
-                                                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                                  child: Text(recipes[index].data['name'],
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 24.0,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
+                                      child: Container(
+                                        height: MediaQuery.of(context).size.width * (9/16),
+                                        width: MediaQuery.of(context).size.width,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Container(
+                                              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                                              child: Text(recipes[index].data['name'],
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 24.0,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                              ],
+                                              ),
                                             ),
+                                          ],
+                                        ),
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: recipes[index].data['imageUrl'] != null ? NetworkImage(recipes[index].data['imageUrl']) : AssetImage('images/pizza.jpg'),
+                                            fit: BoxFit.cover,
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -198,29 +200,31 @@ class _SearchPageState extends State<SearchPage> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
-                        child: Stack(
-                          children: <Widget>[
-                            Image.asset('images/pizza.jpg'),
-                            Container(
-                              height: 210.0,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                    margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                    child: Text(recipes[index]['name'],
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 24.0,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                        child: Container(
+                          height: MediaQuery.of(context).size.width * (9/16),
+                          width: MediaQuery.of(context).size.width,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                                child: Text(recipes[index]['name'],
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24.0,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ],
+                                ),
                               ),
+                            ],
+                          ),
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: recipes[index].data['imageUrl'] != null ? NetworkImage(recipes[index].data['imageUrl']) : AssetImage('images/pizza.jpg'),
+                              fit: BoxFit.cover,
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -303,7 +307,7 @@ class _SearchPageState extends State<SearchPage> {
                                         ],
                                       ),
                                       trailing: FlatButton(
-                                        child: Text('Logout'),
+                                        child: Text('Abmelden'),
                                         onPressed: () {
                                           FirebaseAuth.instance.signOut();
                                           GoogleSignIn().signOut();
@@ -317,7 +321,7 @@ class _SearchPageState extends State<SearchPage> {
                                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                       child: ListTile(
                                         leading: Icon(Icons.settings),
-                                        title: Text('Settings'),
+                                        title: Text('Einstellungen'),
                                       ),
                                       onPressed: null,
                                     ),

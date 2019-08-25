@@ -10,154 +10,145 @@ class GroupDetailPage extends StatefulWidget {
 }
 
 class _GroupDetailPageState extends State<GroupDetailPage> {
+  _GroupDetailPageState(this.groupReference);
   DocumentReference groupReference;
   DocumentSnapshot group;
   List<String> member;
-  Future future;
-  _GroupDetailPageState(this.groupReference);
+  Stream stream;
 
   @override
-  void initState() {
-    super.initState();
-    future = Future(() async {
-      group = await Firestore.instance.collection('groups').document(groupReference.documentID).get();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          List<String> memberIds = group['memberIds'].cast<String>();
-          return Scaffold(
-            appBar: AppBar(
-              title:Text(group['name']),
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (context) {
-                      TextEditingController controller = TextEditingController();
-                      controller.text = group['name'];
-
-                      return Material(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            TextFormField(
-                              autofocus: true,
-                              keyboardType: TextInputType.text,
-                              controller: controller,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                FlatButton(
-                                  child: Text('Close'),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                                FlatButton(
-                                  child: Text('Apply'),
-                                  onPressed: () {
-                                    Firestore.instance.runTransaction((transaction) async {
-                                      DocumentSnapshot freshSnapshot = await transaction.get(group.reference);
-                                      freshSnapshot.data['name'] = controller.text;
-                                      transaction.update(group.reference, freshSnapshot.data);
-                                    });
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.group_add),
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (context) {
-                      TextEditingController controller = TextEditingController();
-                      controller.text = 'ernijo67@gmail.com';
-
-                      return Material(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            TextFormField(
-                              autofocus: true,
-                              keyboardType: TextInputType.emailAddress,
-                              controller: controller,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                FlatButton(
-                                  child: Text('Close'),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                                FlatButton(
-                                  child: Text('Apply'),
-                                  onPressed: () {
-                                    Firestore.instance.collection('users').getDocuments().then((users) {
-                                      DocumentSnapshot user = users.documents.firstWhere((user) => user['emailAddress'] == controller.text);
-                                      addUser(user);
-                                      Navigator.pop(context);
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  ),
-                )
-              ],
-            ),
-            body: ListView.builder(
-              itemCount: memberIds.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: FutureBuilder<DocumentSnapshot>(
-                    future: Firestore.instance.collection('users').document(memberIds[index]).get(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return ListTile(
-                          title: Text(snapshot.data['name']),
-                          trailing: IconButton(
-                            icon: Icon(Icons.remove),
-                            onPressed: () {
-                              removeUser(snapshot.data);
-                            },
+  Widget build(BuildContext context) => StreamBuilder<DocumentSnapshot>(
+    stream: Firestore.instance.collection('groups').document(groupReference.documentID).snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.active && snapshot.hasData && snapshot.data.exists) {
+        group = snapshot.data;
+        List<String> memberIds = group['memberIds'] == null ? [] : group['memberIds'].cast<String>();
+        String groupName = '';
+        if (group['name'] != null) groupName = group['name'];
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(groupName),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (context) {
+                    TextEditingController controller = TextEditingController();
+                    controller.text = group['name'] ?? '';
+                    return Material(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          TextFormField(
+                            autofocus: true,
+                            keyboardType: TextInputType.text,
+                            controller: controller,
                           ),
-                        );
-                      }
-                      else return Text('Loading...');
-                    },
-                  ),
-                );
-              },
-            )
-          );
-        }
-        else {
-          return Material(
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-      },
-    );
-  }
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              FlatButton(
+                                child: Text('Schließen'),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                              FlatButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Firestore.instance.runTransaction((transaction) async {
+                                    DocumentSnapshot freshSnapshot = await transaction.get(group.reference);
+                                    freshSnapshot.data['name'] = controller.text;
+                                    transaction.update(group.reference, freshSnapshot.data);
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.group_add),
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (context) {
+                    TextEditingController controller = TextEditingController();
+                    controller.text = 'ernijo67@gmail.com';
+                    return Material(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          TextFormField(
+                            autofocus: true,
+                            keyboardType: TextInputType.emailAddress,
+                            controller: controller,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              FlatButton(
+                                child: Text('Schließen'),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                              FlatButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Firestore.instance.collection('users').getDocuments().then((users) {
+                                    DocumentSnapshot user = users.documents.firstWhere((user) => user['emailAddress'] == controller.text);
+                                    addUser(user);
+                                    Navigator.pop(context);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                ),
+              )
+            ],
+          ),
+          body: ListView.builder(
+            itemCount: memberIds.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: FutureBuilder<DocumentSnapshot>(
+                  future: Firestore.instance.collection('users').document(memberIds[index]).get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return ListTile(
+                        title: Text(snapshot.data['name']),
+                        trailing: IconButton(
+                          icon: Icon(Icons.remove),
+                          onPressed: () {
+                            removeUser(snapshot.data);
+                          },
+                        ),
+                      );
+                    }
+                    else return Text('Loading...');
+                  },
+                ),
+              );
+            },
+          )
+        );
+      }
+      else {
+        return Material(
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+    },
+  );
     
   addUser(DocumentSnapshot user) {
     Firestore.instance.runTransaction((transaction) async {
@@ -222,7 +213,8 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
         if (memberIds.any((id) => id == member.documentID)) {
           memberIds.removeWhere((id) => id == member.documentID);
           if (memberIds.isEmpty) {
-            transaction.delete(group.reference);
+            transaction.delete(group.reference); // ADD Popup: Gruppe wirklich löschen
+            Navigator.pop(context);
           }
           else {
             transaction.update(group.reference, {'memberIds': memberIds});

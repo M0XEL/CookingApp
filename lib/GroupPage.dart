@@ -13,74 +13,82 @@ class GroupPage extends StatefulWidget {
 
 class _GroupPageState extends State<GroupPage> {
   FirebaseUser firebaseUser;
-  DocumentSnapshot firestoreUser;
   List<DocumentSnapshot> groups = List<DocumentSnapshot>();
   DocumentSnapshot selectedGroup;
-  Future future;
 
   @override
-  void initState() {
-    super.initState();
-    future = Future(() async {
-      firebaseUser = await FirebaseAuth.instance.currentUser();
-      firestoreUser = await Firestore.instance.collection('users').document(firebaseUser.uid).get();
-      List<String> groupIds = await firestoreUser.data['groupIds'].cast<String>();
-      if (groupIds.isEmpty) {
-        selectedGroup = await Firestore.instance.collection('info').document('no_group').get();
-      }
-      else {
-        await Future.forEach(groupIds, (id) => Firestore.instance.collection('groups').document(id).get().then((group) => groups.add(group)));
-        selectedGroup = groups.first;
-      }
-    });
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: FirebaseAuth.instance.currentUser(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          firebaseUser = snapshot.data;
+          return StreamBuilder<DocumentSnapshot>(
+            stream: Firestore.instance.collection('users').document(firebaseUser.uid).snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.active ?? snapshot.hasData) {
+                DocumentSnapshot user = snapshot.data;
+                List<String> groupIds = user.data['groupIds'].cast<String>();
+                Future future = Future(() async {
+                  if (groupIds.isEmpty) {
+                    selectedGroup = await Firestore.instance.collection('info').document('no_group').get();
+                  }
+                  else {
+                    groups.clear();
+                    await Future.forEach(groupIds, (id) => Firestore.instance.collection('groups').document(id).get().then((group) => groups.add(group)));
+                    selectedGroup ?? groups.first;
+                  }
+                });
+
+                return FutureBuilder(
+                  future: future,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      if (selectedGroup == null) selectedGroup = groups.first;
+                      return DefaultTabController(
+                        length: 2,
+                        child: Scaffold(
+                          bottomNavigationBar: MyBottomNavigationBar(index: 1),
+                          appBar: AppBar(
+                            automaticallyImplyLeading: false,
+                            centerTitle: true,
+                            title: Text(selectedGroup['name']),
+                            bottom: TabBar(
+                              tabs: <Widget>[
+                                Tab(
+                                  text: 'Abstimmung',
+                                ),
+                                Tab(
+                                  text: 'Chat',
+                                ),
+                              ],
+                            ),
+                          ),
+                          floatingActionButton: FloatingActionButton(
+                            child: Icon(Icons.keyboard_arrow_up),
+                            onPressed: () => showGroupSelectionSheet(user)
+                          ),
+                          body: TabBarView(
+                            children: <Widget>[
+                              buildVotingPage(firebaseUser),
+                              buildChatPage(),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    else return Material(child: Center(child: CircularProgressIndicator()));
+                  },
+                );
+              }
+              else return Material(child: Center(child: CircularProgressIndicator()));
+            },
+          );
+        }
+        else return Material(child: Center(child: CircularProgressIndicator()));
+      },
+    );
   }
-
-  @override
-  Widget build(BuildContext context) => FutureBuilder(
-    future: future,
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.done) {
-        return DefaultTabController(
-          length: 2,
-          child: Scaffold(
-            bottomNavigationBar: MyBottomNavigationBar(index: 1),
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              centerTitle: true,
-              title: Text(selectedGroup['name']),
-              bottom: TabBar(
-                tabs: <Widget>[
-                  Tab(
-                    text: 'Abstimmung',
-                  ),
-                  Tab(
-                    text: 'Chat',
-                  ),
-                ],
-              ),
-            ),
-            floatingActionButton: FloatingActionButton(
-              child: Icon(Icons.keyboard_arrow_up),
-              onPressed: () => showGroupSelectionSheet(firestoreUser)
-            ),
-            body: TabBarView(
-              children: <Widget>[
-                buildVotingPage(firebaseUser),
-                buildChatPage(),
-              ],
-            ),
-          ),
-        );
-      }
-      else {
-        return Material(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
-    }
-  );
 
   buildVotingPage(FirebaseUser user) => StreamBuilder<DocumentSnapshot>(
     stream: Firestore.instance.collection('recipe_votes').document(selectedGroup.documentID).collection('deadlines').document('today').snapshots(),
@@ -114,60 +122,62 @@ class _GroupPageState extends State<GroupPage> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
-                                child: Stack(
-                                  children: <Widget>[
-                                    Image.asset('images/pizza.jpg'),
-                                    Container(
-                                      height: 210.0,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Container(
-                                            margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                            child: Text(recipeIds[recipes[index].documentID].toString(),
-                                              style: TextStyle(
-                                                color: Colors.greenAccent,
-                                                fontSize: 24.0,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                child: Container(
+                                  height: MediaQuery.of(context).size.width * (9/16),
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Container(
+                                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                                        child: Text(recipeIds[recipes[index].documentID].toString(),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24.0,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          IconButton(
-                                            icon: Icon(Icons.thumb_up),
-                                            onPressed: () => //Firestore.instance.collection('recipe_votes').document(groups[index].documentID).collection('deadlines').document('today').get().then((document) {
-                                              Firestore.instance.runTransaction((transaction) async {
-                                                DocumentSnapshot freshSnapshot = await transaction.get(snapshot.data.reference);
-                                                //List<String> votes = List<String>();
-                                                //votes.addAll(freshSnapshot['hasVoted'].cast<String>());
-                                                /*if (votes.contains(user.data.uid)) {
-                                                  transaction.update(snapshot.data.reference, {'hasVoted': votes});
-                                                }
-                                                else {*/
-                                                  Map<String, int> recipes2 = Map<String, int>();
-                                                  recipes2.addAll(freshSnapshot['recipes'].cast<String, int>());
-                                                  recipes2.update(recipes[index].documentID, (votes) => ++votes);
-                                                  transaction.update(snapshot.data.reference, {'recipes': recipes2});
-                                                  //votes.add(user.uid);
-                                                  //transaction.update(snapshot.data.reference, {'hasVoted': votes});
-                                                //}
-                                              }),
-                                            //}),
-                                          ),
-                                          Container(
-                                            margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                            child: Text(recipes[index].data['name'],
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 24.0,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
+                                      IconButton(
+                                        icon: Icon(Icons.thumb_up),
+                                        onPressed: () => //Firestore.instance.collection('recipe_votes').document(groups[index].documentID).collection('deadlines').document('today').get().then((document) {
+                                          Firestore.instance.runTransaction((transaction) async {
+                                            DocumentSnapshot freshSnapshot = await transaction.get(snapshot.data.reference);
+                                            //List<String> votes = List<String>();
+                                            //votes.addAll(freshSnapshot['hasVoted'].cast<String>());
+                                            /*if (votes.contains(user.data.uid)) {
+                                              transaction.update(snapshot.data.reference, {'hasVoted': votes});
+                                            }
+                                            else {*/
+                                              Map<String, int> recipes2 = Map<String, int>();
+                                              recipes2.addAll(freshSnapshot['recipes'].cast<String, int>());
+                                              recipes2.update(recipes[index].documentID, (votes) => ++votes);
+                                              transaction.update(snapshot.data.reference, {'recipes': recipes2});
+                                              //votes.add(user.uid);
+                                              //transaction.update(snapshot.data.reference, {'hasVoted': votes});
+                                            //}
+                                          }),
+                                        //}),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                        child: Text(recipes[index].data['name'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: recipes[index].data['imageUrl'] != null ? NetworkImage(recipes[index].data['imageUrl']) : AssetImage('images/pizza.jpg'),
+                                      fit: BoxFit.cover,
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -203,36 +213,62 @@ class _GroupPageState extends State<GroupPage> {
     context: context,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
     builder: (context) {
-      return ListView.builder(
-        itemCount: groups.length + 1,
-        itemBuilder: (context, index) {
-          if (index == groups.length) {
-            return ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Neue Gruppe erstellen'),
-              onTap: () async {
-                DocumentReference groupReference = await addGroup(user);
-                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => GroupDetailPage(groupReference)));
+      return StreamBuilder(
+        stream: Firestore.instance.collection('users').document(firebaseUser.uid).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.active ?? snapshot.hasData) {
+            DocumentSnapshot user = snapshot.data;
+            List<String> groupIds = user.data['groupIds'].cast<String>();
+            List<DocumentSnapshot> groups = List<DocumentSnapshot>();
+            Future future = Future(() async => Future.forEach(groupIds, (id) => Firestore.instance.collection('groups').document(id).get().then((group) => groups.add(group))));
+            return FutureBuilder(
+              future: future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return ListView.builder(
+                    itemCount: groups.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == groups.length) {
+                        return ListTile(
+                          leading: Icon(Icons.add),
+                          title: Text('Neue Gruppe erstellen'),
+                          onTap: () async {
+                            DocumentReference groupReference = await addGroup(user);
+                            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => GroupDetailPage(groupReference)));
+                          }
+                        );
+                      }
+                      else {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: selectedGroup.documentID == groups[index].documentID ? Colors.orangeAccent[100] : null,
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: ListTile(
+                            leading: FlutterLogo(),
+                            title: Text(groups[index]['name']),
+                            onTap: () => setState(() {
+                              selectedGroup = groups[index];
+                              Navigator.pop(context);
+                            }),
+                            trailing: IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => GroupDetailPage(groups[index].reference))),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                }
+                else return Center(child: CircularProgressIndicator());
               }
             );
           }
-          else {
-            return ListTile(
-              leading: FlutterLogo(),
-              title: Text(groups[index]['name']),
-              onTap: () => setState(() {
-                selectedGroup = groups[index];
-                Navigator.pop(context);
-              }),
-              trailing: IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => GroupDetailPage(groups[index].reference))),
-              ),
-            );
-          }
+          else return Center(child: CircularProgressIndicator());
         },
       );
-    },
+    }, 
   );
 
   Future<DocumentReference> addGroup(DocumentSnapshot user) async {
