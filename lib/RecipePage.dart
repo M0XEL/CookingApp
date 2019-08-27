@@ -120,7 +120,7 @@ class _RecipePageState extends State<RecipePage> {
 
   showGroupSelection() => FirebaseAuth.instance.currentUser().then((user) {
     Firestore.instance.collection('users').document(user.uid).get().then((user) {
-      List<String> groupIds = user.data['groupIds'].cast<String>();
+      List<String> groupIds = user.data['groupIds'] != null ? user.data['groupIds'].cast<String>() : [];
       List<DocumentSnapshot> groups = List<DocumentSnapshot>();
       showDialog(
         context: context,
@@ -137,24 +137,32 @@ class _RecipePageState extends State<RecipePage> {
                     }
                   });
                 });
-                return Material (
-                  child: ListView.builder(
-                    itemCount: groups.length,
-                    itemBuilder: (context, index) {
-                      return MaterialButton(
-                        child: ListTile(
-                          title: Text(groups[index].data['name']),
-                        ),
-                        onPressed: () {
-                          addRecipeToGroup(groups[index]);
-                          Navigator.pop(context);
-                        }
-                      );
-                    },
-                  ),
+                return SimpleDialog(
+                  title: Text('Gruppe auswählen'),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  children: <Widget>[
+                    Container(
+                      height: groups.length < 5 ? groups.length * 64.0 : 320.0,
+                      width: 100,
+                      child: ListView.builder(
+                        itemCount: groups.length,
+                        itemBuilder: (context, index) {
+                          return MaterialButton(
+                            child: ListTile(
+                              title: Text(groups[index].data['name'] != null ? groups[index].data['name'] : []),
+                            ),
+                            onPressed: () {
+                              addRecipeToGroup(groups[index]);
+                              Navigator.pop(context);
+                            }
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 );
               }
-              else return Container();
+              else return Center(child: CircularProgressIndicator());
             },
           );
         }
@@ -164,11 +172,10 @@ class _RecipePageState extends State<RecipePage> {
 
   addRecipeToGroup(DocumentSnapshot group) => Firestore.instance.collection('recipe_votes').document(group.documentID).collection('deadlines').document('today').get().then((document) {
     if (document.exists) {
-      print('object');
       Firestore.instance.runTransaction((transaction) async {
         DocumentSnapshot freshSnapshot = await transaction.get(document.reference);
         Map<String, int> recipes = Map<String, int>();
-        recipes.addAll(freshSnapshot['recipes'].cast<String, int>());
+        recipes.addAll(freshSnapshot['recipes'] != null ? freshSnapshot['recipes'].cast<String, int>() : []);
         print(recipes);
         if (recipes.containsKey(recipeId)) {
           transaction.update(document.reference, {'recipes': recipes});

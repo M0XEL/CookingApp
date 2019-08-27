@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
         children: <Widget>[
           Container(
             width: 48,
-            child: Icon(Icons.person),
+            child: Image.asset('images/google_logo.jpg', height: 32),
           ),
           Text(label,
             style: TextStyle(
@@ -86,11 +86,17 @@ class _LoginPageState extends State<LoginPage> {
                   size: 112.0,
                 ),
                 Container(height: 96.0),
-                buildButton('Log in anonymously', signInAnonymously),
+                /*buildButton('Log in anonymously', signInAnonymously),
                 Container(height: 24.0),
                 buildButton('Log in with Email', signInWithEmailAndPassword),
+                Container(height: 24.0),*/
+                buildButton('Mit Google einloggen', signInWithGoogle),
                 Container(height: 24.0),
-                buildButton('Log in with Google', signInWithGoogle),
+                Text('Andere Anmeldemethoden in Entwicklung',
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
               ],
             );
           }

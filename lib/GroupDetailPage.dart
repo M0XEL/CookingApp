@@ -36,78 +36,81 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                   builder: (context) {
                     TextEditingController controller = TextEditingController();
                     controller.text = group['name'] ?? '';
-                    return Material(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          TextFormField(
-                            autofocus: true,
-                            keyboardType: TextInputType.text,
-                            controller: controller,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              FlatButton(
-                                child: Text('Schließen'),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                              FlatButton(
-                                child: Text('OK'),
-                                onPressed: () {
-                                  Firestore.instance.runTransaction((transaction) async {
-                                    DocumentSnapshot freshSnapshot = await transaction.get(group.reference);
-                                    freshSnapshot.data['name'] = controller.text;
-                                    transaction.update(group.reference, freshSnapshot.data);
-                                  });
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    return SimpleDialog(
+                      title: Text('Gruppennamen ändern'),
+                      contentPadding: EdgeInsets.all(16.0),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                      children: <Widget>[
+                        TextFormField(
+                          autofocus: true,
+                          keyboardType: TextInputType.text,
+                          controller: controller,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            FlatButton(
+                              child: Text('Schließen'),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            FlatButton(
+                              child: Text('OK'),
+                              onPressed: () {
+                                Firestore.instance.runTransaction((transaction) async {
+                                  DocumentSnapshot freshSnapshot = await transaction.get(group.reference);
+                                  freshSnapshot.data['name'] = controller.text;
+                                  transaction.update(group.reference, freshSnapshot.data);
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     );
                   }
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.group_add),
+                icon: Icon(Icons.person_add),
                 onPressed: () => showDialog(
                   context: context,
                   builder: (context) {
                     TextEditingController controller = TextEditingController();
-                    controller.text = 'ernijo67@gmail.com';
-                    return Material(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          TextFormField(
-                            autofocus: true,
-                            keyboardType: TextInputType.emailAddress,
-                            controller: controller,
+                    return SimpleDialog(
+                      title: Text('Teilnehmer hinzufügen'),
+                      contentPadding: EdgeInsets.all(16.0),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                      children: <Widget>[
+                        TextFormField(
+                          autofocus: true,
+                          keyboardType: TextInputType.emailAddress,
+                          controller: controller,
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.email),
+                            hintText: 'email',
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              FlatButton(
-                                child: Text('Schließen'),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                              FlatButton(
-                                child: Text('OK'),
-                                onPressed: () {
-                                  Firestore.instance.collection('users').getDocuments().then((users) {
-                                    DocumentSnapshot user = users.documents.firstWhere((user) => user['emailAddress'] == controller.text);
-                                    addUser(user);
-                                    Navigator.pop(context);
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            FlatButton(
+                              child: Text('Schließen'),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            FlatButton(
+                              child: Text('OK'),
+                              onPressed: () {
+                                Firestore.instance.collection('users').getDocuments().then((users) {
+                                  DocumentSnapshot user = users.documents.firstWhere((user) => user['emailAddress'] == controller.text);
+                                  addUser(user);
+                                  Navigator.pop(context);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     );
                   }
                 ),

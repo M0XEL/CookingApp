@@ -303,7 +303,11 @@ class _SearchPageState extends State<SearchPage> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: <Widget>[
                                           Text(user.data.displayName),
-                                          Text(user.data.email),
+                                          Text(user.data.email,
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       trailing: FlatButton(

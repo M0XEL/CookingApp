@@ -28,7 +28,7 @@ class _GroupPageState extends State<GroupPage> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.active ?? snapshot.hasData) {
                 DocumentSnapshot user = snapshot.data;
-                List<String> groupIds = user.data['groupIds'].cast<String>();
+                List<String> groupIds = user.data['groupIds'] != null ? user.data['groupIds'].cast<String>() : [];
                 Future future = Future(() async {
                   if (groupIds.isEmpty) {
                     selectedGroup = await Firestore.instance.collection('info').document('no_group').get();
@@ -95,7 +95,7 @@ class _GroupPageState extends State<GroupPage> {
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.active) {
         if (snapshot.data.exists) {
-          Map<String, num> recipeIds = snapshot.data.data['recipes'].cast<String, num>();
+          Map<String, num> recipeIds = snapshot.data.data['recipes'] != null ? snapshot.data.data['recipes'].cast<String, num>() : [];
           return StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance.collection('recipes').snapshots(),
             builder: (context, snapshot1) {
@@ -151,7 +151,7 @@ class _GroupPageState extends State<GroupPage> {
                                             }
                                             else {*/
                                               Map<String, int> recipes2 = Map<String, int>();
-                                              recipes2.addAll(freshSnapshot['recipes'].cast<String, int>());
+                                              recipes2.addAll(freshSnapshot['recipes'] != null ? freshSnapshot['recipes'].cast<String, int>() : []);
                                               recipes2.update(recipes[index].documentID, (votes) => ++votes);
                                               transaction.update(snapshot.data.reference, {'recipes': recipes2});
                                               //votes.add(user.uid);
@@ -162,7 +162,7 @@ class _GroupPageState extends State<GroupPage> {
                                       ),
                                       Container(
                                         margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                        child: Text(recipes[index].data['name'],
+                                        child: Text(recipes[index].data['name'] != null ? recipes[index].data['name'] : '',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 24.0,
@@ -204,7 +204,7 @@ class _GroupPageState extends State<GroupPage> {
     itemCount: 1,
     itemBuilder: (context, index) {
       return Chip(
-        label: Text('coming soon'),
+        label: Text('In Entwicklung'),
       );
     },
   );
@@ -216,9 +216,9 @@ class _GroupPageState extends State<GroupPage> {
       return StreamBuilder(
         stream: Firestore.instance.collection('users').document(firebaseUser.uid).snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.active ?? snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.active && snapshot.hasData) {
             DocumentSnapshot user = snapshot.data;
-            List<String> groupIds = user.data['groupIds'].cast<String>();
+            List<String> groupIds = user.data['groupIds'] != null ? user.data['groupIds'].cast<String>() : [];
             List<DocumentSnapshot> groups = List<DocumentSnapshot>();
             Future future = Future(() async => Future.forEach(groupIds, (id) => Firestore.instance.collection('groups').document(id).get().then((group) => groups.add(group))));
             return FutureBuilder(
@@ -226,9 +226,21 @@ class _GroupPageState extends State<GroupPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   return ListView.builder(
-                    itemCount: groups.length + 1,
+                    itemCount: groups.length + 2,
                     itemBuilder: (context, index) {
-                      if (index == groups.length) {
+                      if (index == 0) {
+                        return Container(
+                          height: 56.0,
+                          alignment: Alignment.center,
+                          child: Text('Gruppe auswählen',
+                            style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }
+                      else if (index == groups.length + 1) {
                         return ListTile(
                           leading: Icon(Icons.add),
                           title: Text('Neue Gruppe erstellen'),
@@ -239,14 +251,16 @@ class _GroupPageState extends State<GroupPage> {
                         );
                       }
                       else {
+                        index--;
+                        print(index);
                         return Container(
                           decoration: BoxDecoration(
                             color: selectedGroup.documentID == groups[index].documentID ? Colors.orangeAccent[100] : null,
-                            borderRadius: BorderRadius.circular(16.0),
+                            borderRadius: BorderRadius.circular(32.0),
                           ),
                           child: ListTile(
-                            leading: FlutterLogo(),
-                            title: Text(groups[index]['name']),
+                            leading: Container(width: 40),
+                            title: Text(groups[index]['name'] != null ? groups[index]['name'] : ''),
                             onTap: () => setState(() {
                               selectedGroup = groups[index];
                               Navigator.pop(context);
@@ -282,7 +296,7 @@ class _GroupPageState extends State<GroupPage> {
     await Firestore.instance.runTransaction((transaction) async {
       DocumentSnapshot freshUserSnapshot = await transaction.get(user.reference);
       List<String> groupIds = List<String>();
-      groupIds.addAll(freshUserSnapshot['groupIds'].cast<String>());
+      groupIds.addAll(freshUserSnapshot['groupIds'] != null ? freshUserSnapshot['groupIds'].cast<String>() : []);
       groupIds.add(groupReference.documentID);
       transaction.update(user.reference, {'groupIds': groupIds});
     });
