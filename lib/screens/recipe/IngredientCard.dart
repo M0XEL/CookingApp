@@ -140,6 +140,7 @@ class _IngredientCardState extends State<IngredientCard> {
                 return Center(child: Text('Bad state :('));
                 break;
             }
+            return Container();
           },
         ),
       ],

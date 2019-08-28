@@ -1,13 +1,10 @@
-import 'package:CookingApp/PreparationCard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' as prefix0;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'IngredientCard.dart';
 import 'PreparationCard.dart';
+import 'IngredientCard.dart';
 
 class RecipePage extends StatefulWidget {
   final String documentId;
@@ -77,6 +74,7 @@ class _RecipePageState extends State<RecipePage> {
                         case ConnectionState.none:
                           break;
                       }
+                      return Container();
                     },
                   ),
                   background: Image.asset('images/pizza.jpg'),

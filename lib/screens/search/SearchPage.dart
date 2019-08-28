@@ -1,11 +1,11 @@
-import 'package:CookingApp/LoginPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:async';
-import 'RecipePage.dart';
-import 'MyBottomNavigationBar.dart';
+import 'package:CookingApp/screens/recipe/RecipePage.dart';
+import 'package:CookingApp/components/MyBottomNavigationBar.dart';
+import 'package:CookingApp/screens/login/LoginPage.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -26,13 +26,18 @@ class _SearchPageState extends State<SearchPage> {
   BodyType bodyType = BodyType.trending;
   String searchString = '';
   Widget body = Container();
+  String recipeType = '';
+  bool isHighCarb = false;
+  bool isVegetarian = false;
+  bool isMeat = false;
+  bool searchViaText = true; // false -> via filter
+  List<DocumentSnapshot> recipesByFilter = List<DocumentSnapshot>();
 
-  changeSearchResults(string) {
-    print(textEditingController.text);
+  changeSearchResults(String string) {
     if (string.isNotEmpty) {
       List<String> newList = List<String>();
       completeList.forEach((item) {
-        if (item.contains(string)) {
+        if (item.toLowerCase().contains(string.toLowerCase())) {
           newList.add(item);
         }
       });
@@ -149,7 +154,82 @@ class _SearchPageState extends State<SearchPage> {
               break;
 
             case BodyType.filter:
-              body = Text('Place for filters');;
+              body = Column(
+                children: <Widget>[
+                  Expanded(
+                    child: ListView(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            MaterialButton(
+                              color: recipeType == 'normal' ? Colors.orangeAccent : null,
+                              child: Text('Gerichte'),
+                              onPressed: () => setState(() => recipeType = recipeType == 'normal' ? '' : 'normal'),
+                            ),
+                            MaterialButton(
+                              child: Text('Desserts'),
+                              onPressed: null,
+                            ),
+                            MaterialButton(
+                              child: Text('Getränke'),
+                              onPressed: null,
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: <Widget>[
+                            MaterialButton(
+                              color: isHighCarb ? Colors.orangeAccent : null,
+                              child: Chip(
+                                label: Text('High Carb'),
+                              ),
+                              onPressed: () => setState(() => isHighCarb = isHighCarb ? false : true),
+                            ),
+                            MaterialButton(
+                              color: isVegetarian ? Colors.orangeAccent : null,
+                              child: Chip(
+                                label: Text('Vegetarisch'),
+                              ),
+                              onPressed: () => setState(() => isVegetarian = isVegetarian ? false : true),
+                            ),
+                            MaterialButton(
+                              color: isMeat ? Colors.orangeAccent : null,
+                              child: Chip(
+                                label: Text('Fleisch'),
+                              ),
+                              onPressed: () => setState(() => isMeat = isMeat ? false : true),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 100.0,
+                          alignment: Alignment.center,
+                          child: Text('Weitere Filter in Entwicklung'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  MaterialButton(
+                    color: Colors.orangeAccent,
+                    child: Text('Suchen'),
+                    onPressed: () async {
+                      QuerySnapshot snapshot = await Firestore.instance.collection('recipes')
+                      .where('type', isEqualTo: recipeType == '' ? null : recipeType)
+                      .where('filter', arrayContains: isHighCarb ? 'high_carb' : null)
+                      .where('filter', arrayContains: isVegetarian ? 'vegetarian' : null)
+                      .where('filter', arrayContains: isMeat ? 'meat' : null)
+                      .getDocuments();
+                      setState(() {
+                        recipesByFilter.clear();
+                        recipesByFilter.addAll(snapshot.documents);
+                        bodyType = BodyType.recipe;
+                        searchViaText = false;
+                      });
+                    },
+                  ),
+                ],
+              );
               break;
 
             case BodyType.categorie:
@@ -167,6 +247,7 @@ class _SearchPageState extends State<SearchPage> {
                     onPressed: () => setState(() {
                       bodyType = BodyType.recipe;
                       searchString = displayList[index];
+                      searchViaText = true;
                     }),
                   );
                 },
@@ -175,63 +256,77 @@ class _SearchPageState extends State<SearchPage> {
 
             case BodyType.recipe:
               List<DocumentSnapshot> recipes = List<DocumentSnapshot>();
-              recipes.clear();
-              snapshot.data[1].documents.forEach((document) {
-                if (document['categorie'] != null) {
-                  if (document['categorie'] == searchString) {
-                    recipes.add(document);
-                  }
-                }
-              });
-              if (recipes.isEmpty) {
+
+              if (searchViaText) {
+                recipes.clear();
                 snapshot.data[1].documents.forEach((document) {
-                  if (document['name'].contains(searchString)) {
-                    recipes.add(document);
+                  if (document['categorie'] != null) {
+                    if (document['categorie'].toLowerCase() == searchString.toLowerCase()) {
+                      recipes.add(document);
+                    }
                   }
                 });
+                if (recipes.isEmpty) {
+                  snapshot.data[1].documents.forEach((document) {
+                    if (document['name'].toLowerCase().contains(searchString.toLowerCase())) {
+                      recipes.add(document);
+                    }
+                  });
+                }
+              }
+              else {
+                recipes.clear();
+                recipes.addAll(recipesByFilter);
               }
 
-              body = ListView.builder(
-                itemCount: recipes.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return MaterialButton(
-                    padding: EdgeInsets.all(0.0),
-                    child: Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Container(
-                          height: MediaQuery.of(context).size.width * (9/16),
-                          width: MediaQuery.of(context).size.width,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Container(
-                                margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                                child: Text(recipes[index]['name'],
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24.0,
-                                    fontWeight: FontWeight.bold,
+              if (recipes.isEmpty) {
+                body = Center(
+                  child: Text('Keine passenden Rezepte gefunden :('),
+                );
+              }
+              else {
+                body = ListView.builder(
+                  itemCount: recipes.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return MaterialButton(
+                      padding: EdgeInsets.all(0.0),
+                      child: Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: Container(
+                            height: MediaQuery.of(context).size.width * (9/16),
+                            width: MediaQuery.of(context).size.width,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                                  child: Text(recipes[index]['name'],
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
+                              ],
+                            ),
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: recipes[index].data['imageUrl'] != null ? NetworkImage(recipes[index].data['imageUrl']) : AssetImage('images/pizza.jpg'),
+                                fit: BoxFit.cover,
                               ),
-                            ],
-                          ),
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: recipes[index].data['imageUrl'] != null ? NetworkImage(recipes[index].data['imageUrl']) : AssetImage('images/pizza.jpg'),
-                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => RecipePage(recipes[index].documentID))),
-                  );
-                },
-              );
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => RecipePage(recipes[index].documentID))),
+                    );
+                  },
+                );
+              }
               break;
           }
 
@@ -269,6 +364,7 @@ class _SearchPageState extends State<SearchPage> {
                         onSubmitted: (string) => setState(() {
                           bodyType = BodyType.recipe;
                           searchString = string;
+                          searchViaText = true;
                         }),
                       ),
                     ),
@@ -372,6 +468,7 @@ class _SearchPageState extends State<SearchPage> {
           return Text('Bad state :(');
           break;
       }
+      return Container();
     },
   );
 }

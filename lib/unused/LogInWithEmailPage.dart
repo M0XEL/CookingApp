@@ -1,4 +1,4 @@
-import 'package:CookingApp/TrendingPage.dart';
+/*import 'package:CookingApp/TrendingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'SearchPage.dart';
@@ -107,4 +107,4 @@ class _LogInWithEmailPageState extends State<LogInWithEmailPage> {
       ),
     ), 
   );
-}
+}*/

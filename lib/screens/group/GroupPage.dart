@@ -1,10 +1,12 @@
-import 'package:CookingApp/GroupDetailPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'MyBottomNavigationBar.dart';
-import 'RecipePage.dart';
+import 'package:CookingApp/screens/recipe/RecipePage.dart';
+import 'package:CookingApp/screens/group_detail/GroupDetailPage.dart';
+import 'package:CookingApp/components/MyBottomNavigationBar.dart';
+import 'package:CookingApp/services/firestore_vote.dart';
+import 'package:CookingApp/services/firestore_add_group.dart';
 
 class GroupPage extends StatefulWidget {
   @override
@@ -141,24 +143,7 @@ class _GroupPageState extends State<GroupPage> {
                                       ),
                                       IconButton(
                                         icon: Icon(Icons.thumb_up),
-                                        onPressed: () => //Firestore.instance.collection('recipe_votes').document(groups[index].documentID).collection('deadlines').document('today').get().then((document) {
-                                          Firestore.instance.runTransaction((transaction) async {
-                                            DocumentSnapshot freshSnapshot = await transaction.get(snapshot.data.reference);
-                                            //List<String> votes = List<String>();
-                                            //votes.addAll(freshSnapshot['hasVoted'].cast<String>());
-                                            /*if (votes.contains(user.data.uid)) {
-                                              transaction.update(snapshot.data.reference, {'hasVoted': votes});
-                                            }
-                                            else {*/
-                                              Map<String, int> recipes2 = Map<String, int>();
-                                              recipes2.addAll(freshSnapshot['recipes'] != null ? freshSnapshot['recipes'].cast<String, int>() : []);
-                                              recipes2.update(recipes[index].documentID, (votes) => ++votes);
-                                              transaction.update(snapshot.data.reference, {'recipes': recipes2});
-                                              //votes.add(user.uid);
-                                              //transaction.update(snapshot.data.reference, {'hasVoted': votes});
-                                            //}
-                                          }),
-                                        //}),
+                                        onPressed: () => vote(snapshot.data.reference, recipes[index].documentID)
                                       ),
                                       Container(
                                         margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -284,22 +269,4 @@ class _GroupPageState extends State<GroupPage> {
       );
     }, 
   );
-
-  Future<DocumentReference> addGroup(DocumentSnapshot user) async {
-    DocumentReference groupReference = await Firestore.instance.collection('groups').add({'name': '-'});
-    await Firestore.instance.runTransaction((transaction) async {
-      transaction.set(groupReference, {
-        'name': 'Neue Gruppe',
-        'memberIds': [user.documentID],
-      });
-    });
-    await Firestore.instance.runTransaction((transaction) async {
-      DocumentSnapshot freshUserSnapshot = await transaction.get(user.reference);
-      List<String> groupIds = List<String>();
-      groupIds.addAll(freshUserSnapshot['groupIds'] != null ? freshUserSnapshot['groupIds'].cast<String>() : []);
-      groupIds.add(groupReference.documentID);
-      transaction.update(user.reference, {'groupIds': groupIds});
-    });
-    return groupReference;
-  }
 }

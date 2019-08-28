@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:async';
 
 // TODO: add minutes after Headline
 
@@ -85,6 +84,7 @@ class _PreparationCardState extends State<PreparationCard> {
                 return Center(child: Text('Bad state :('));
                 break;
             }
+            return Container();
           },
         ),
       ],

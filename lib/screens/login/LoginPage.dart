@@ -1,10 +1,8 @@
-import 'package:CookingApp/TrendingPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'LogInWithEmailPage.dart';
-import 'SearchPage.dart';
+import 'package:CookingApp/screens/search/SearchPage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -36,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
     onPressed: () => action(),
   );
 
-  signInAnonymously() {
+  /*signInAnonymously() {
     FirebaseAuth.instance.signInAnonymously().then((user) {
       updateDatabase(user);
       Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
@@ -45,9 +43,9 @@ class _LoginPageState extends State<LoginPage> {
         });
       });*/
     });
-  }
+  }*/
 
-  signInWithEmailAndPassword() => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LogInWithEmailPage(updateDatabase)));
+  //signInWithEmailAndPassword() => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LogInWithEmailPage(updateDatabase)));
 
   signInWithGoogle() {
     GoogleSignIn().signIn().then((user) {
@@ -70,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
       future: FirebaseAuth.instance.currentUser(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
       switch (snapshot.connectionState) {
-        case ConnectionState.active:
+        case ConnectionState.active: return Container();
         
         case ConnectionState.waiting:
           return Center(child: CircularProgressIndicator());
@@ -107,6 +105,7 @@ class _LoginPageState extends State<LoginPage> {
           return Text('Bad state :(');
           break;
       }
+      return Container();
     },
     ),
   );
@@ -117,6 +116,7 @@ class _LoginPageState extends State<LoginPage> {
         Firestore.instance.collection('users').document(user.uid).setData({
           'name': user.displayName,
           'photoUrl': user.photoUrl,
+          'emailAddress': user.email,
         });
       }
     });
