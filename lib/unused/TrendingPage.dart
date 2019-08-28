@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+/*import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'MyDrawer.dart';
@@ -13,7 +13,6 @@ class TrendingPage extends StatefulWidget {
 
 class _TrendingPageState extends State<TrendingPage> {
   Widget build(BuildContext context) => Scaffold(
-    drawer: MyDrawer(),
     bottomNavigationBar: MyBottomNavigationBar(index: 0),
     body: StreamBuilder<QuerySnapshot>(
       stream: Firestore.instance.collection('recipes').snapshots(),
@@ -86,7 +85,7 @@ class _TrendingPageState extends State<TrendingPage> {
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage())),
                     leading: IconButton(
                       icon: Icon(Icons.dehaze),
-                      onPressed: () => Scaffold.of(context).openDrawer(),
+                      onPressed: null, //() => Scaffold.of(context).openDrawer(),
                     ),
                     title: Text('Search for recipes...',
                       style: TextStyle(color: Colors.grey),
@@ -100,4 +99,4 @@ class _TrendingPageState extends State<TrendingPage> {
       },
     ),
   );
-}
+}*/

@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:async';
+
+// TODO: add minutes after Headline
 
 class PreparationCard extends StatefulWidget {
   final recipeId;
@@ -22,7 +23,7 @@ class _PreparationCardState extends State<PreparationCard> {
   Widget build(BuildContext context) => Card(
     child: Column(
       children: <Widget>[
-        buildCardHeadline('Preparation'),
+        buildCardHeadline('Schritte'),
         FutureBuilder(
           future: Firestore.instance.collection('recipes').getDocuments(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -42,41 +43,48 @@ class _PreparationCardState extends State<PreparationCard> {
                 DocumentSnapshot document2 = snapshot.data.documents.firstWhere((document) {
                   return document.documentID == recipeId;
                 });
-                steps = document2['steps'].cast<String>();
 
-                List<Widget> preparationList = List<Widget>();
-                for (int i = 0; i < steps.length; i++) {
-                  preparationList.add(
-                    ListTile(
-                      leading: Container(
-                        width: 32.0,
-                        height: 32.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.orange,
-                        ),
-                        child: Center(
-                          child: Text(i.toString(),
-                            style: TextStyle(
-                              color: Colors.white,
+                if (document2['steps'] == null) {
+                  return Container();
+                }
+                else {
+                  steps = document2['steps'].cast<String>();
+
+                  List<Widget> preparationList = List<Widget>();
+                  for (int i = 0; i < steps.length; i++) {
+                    preparationList.add(
+                      ListTile(
+                        leading: Container(
+                          width: 32.0,
+                          height: 32.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.orange,
+                          ),
+                          child: Center(
+                            child: Text(i.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      title: Text(steps[i]),
-                    )
+                        title: Text(steps[i]),
+                      )
+                    );
+                  }
+
+                  return Column(
+                    children: preparationList,
                   );
                 }
-
-                return Column(
-                  children: preparationList,
-                );
                 break;
 
               case ConnectionState.none:
                 return Center(child: Text('Bad state :('));
                 break;
             }
+            return Container();
           },
         ),
       ],

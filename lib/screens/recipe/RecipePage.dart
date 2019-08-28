@@ -1,10 +1,10 @@
-import 'package:CookingApp/PreparationCard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'IngredientCard.dart';
 import 'PreparationCard.dart';
+import 'IngredientCard.dart';
 
 class RecipePage extends StatefulWidget {
   final String documentId;
@@ -48,7 +48,6 @@ class _RecipePageState extends State<RecipePage> {
                   title: FutureBuilder(
                     future: Firestore.instance.collection('recipes').getDocuments(),
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      print(snapshot);
                       switch (snapshot.connectionState) {
                         case ConnectionState.active:
 
@@ -75,6 +74,7 @@ class _RecipePageState extends State<RecipePage> {
                         case ConnectionState.none:
                           break;
                       }
+                      return Container();
                     },
                   ),
                   background: Image.asset('images/pizza.jpg'),
@@ -110,17 +110,98 @@ class _RecipePageState extends State<RecipePage> {
         ),
         IconButton(
           icon: Icon(Icons.calendar_today),
-          onPressed: null,
+          onPressed: () => showGroupSelection()
         ),
       ],
     ),
   );
 
+  showGroupSelection() => FirebaseAuth.instance.currentUser().then((user) {
+    Firestore.instance.collection('users').document(user.uid).get().then((user) {
+      List<String> groupIds = user.data['groupIds'] != null ? user.data['groupIds'].cast<String>() : [];
+      List<DocumentSnapshot> groups = List<DocumentSnapshot>();
+      showDialog(
+        context: context,
+        builder: (context) {
+          return FutureBuilder<QuerySnapshot>(
+            future: Firestore.instance.collection('groups').getDocuments(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                groups.clear();
+                snapshot.data.documents.forEach((document) {
+                  groupIds.forEach((id) {
+                    if (document.documentID == id) {
+                      groups.add(document);
+                    }
+                  });
+                });
+                return SimpleDialog(
+                  title: Text('Gruppe auswählen'),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  children: <Widget>[
+                    Container(
+                      height: groups.length < 5 ? groups.length * 64.0 : 320.0,
+                      width: 100,
+                      child: ListView.builder(
+                        itemCount: groups.length,
+                        itemBuilder: (context, index) {
+                          return MaterialButton(
+                            child: ListTile(
+                              title: Text(groups[index].data['name'] != null ? groups[index].data['name'] : []),
+                            ),
+                            onPressed: () {
+                              addRecipeToGroup(groups[index]);
+                              Navigator.pop(context);
+                            }
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+              else return Center(child: CircularProgressIndicator());
+            },
+          );
+        }
+      );
+    });
+  });
+
+  addRecipeToGroup(DocumentSnapshot group) => Firestore.instance.collection('recipe_votes').document(group.documentID).collection('deadlines').document('today').get().then((document) {
+    if (document.exists) {
+      Firestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot freshSnapshot = await transaction.get(document.reference);
+        Map<String, int> recipes = Map<String, int>();
+        recipes.addAll(freshSnapshot['recipes'] != null ? freshSnapshot['recipes'].cast<String, int>() : []);
+        print(recipes);
+        if (recipes.containsKey(recipeId)) {
+          transaction.update(document.reference, {'recipes': recipes});
+        }
+        else {
+          List<MapEntry<String, int>> l = List<MapEntry<String, int>>();
+          l.add(MapEntry(recipeId, 0));
+          recipes.addEntries(l);
+          transaction.update(document.reference, {'recipes': recipes});
+        }
+      });
+    }
+    else {
+      Firestore.instance.runTransaction((transaction) async {
+        Map<String, int> recipes = Map<String, int>();
+        List<MapEntry<String, int>> l = List<MapEntry<String, int>>();
+        l.add(MapEntry(recipeId, 0));
+        recipes.addEntries(l);
+        transaction.set(document.reference, {'recipes': recipes});
+      });
+    }
+  });
+
   buildNutritionInfoCard() {
     return Card(
       child: Column(
         children: <Widget>[
-          buildCardHeadline('Nutrition Info'),
+          buildCardHeadline('Nährwerte'),
         ],
       )
     );
