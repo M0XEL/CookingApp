@@ -28,7 +28,7 @@ class _IngredientCardState extends State<IngredientCard> {
   Widget build(BuildContext context) => Card(
     child: Column(
       children: <Widget>[
-        buildCardHeadline('Ingredients'),
+        buildCardHeadline('Zutaten'),
         FutureBuilder(
           future: Future.wait([
             Firestore.instance.collection('recipes').document(recipeId).collection('ingredients').getDocuments(),
@@ -110,7 +110,7 @@ class _IngredientCardState extends State<IngredientCard> {
                         leading: Container(width: 40),
                         title: Row(
                           children: <Widget>[
-                            buildText('for'),
+                            buildText('für'),
                             IconButton(
                               icon: Icon(Icons.remove, color: Colors.orangeAccent),
                               onPressed: () => setState(() => servings > 1 ? servings-- : servings),
@@ -127,7 +127,7 @@ class _IngredientCardState extends State<IngredientCard> {
                               icon: Icon(Icons.add, color: Colors.orangeAccent),
                               onPressed: () => setState(() => servings++),
                             ),
-                            buildText('servings'),
+                            buildText('Portionen'),
                           ],
                         ),
                       ),

@@ -201,7 +201,7 @@ class _RecipePageState extends State<RecipePage> {
     return Card(
       child: Column(
         children: <Widget>[
-          buildCardHeadline('Nutrition Info'),
+          buildCardHeadline('Nährwerte'),
         ],
       )
     );

@@ -23,7 +23,7 @@ class _PreparationCardState extends State<PreparationCard> {
   Widget build(BuildContext context) => Card(
     child: Column(
       children: <Widget>[
-        buildCardHeadline('Preparation'),
+        buildCardHeadline('Schritte'),
         FutureBuilder(
           future: Firestore.instance.collection('recipes').getDocuments(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
