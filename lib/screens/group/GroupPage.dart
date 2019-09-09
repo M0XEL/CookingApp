@@ -141,6 +141,7 @@ class _GroupPageState extends State<GroupPage> {
                                           ),
                                         ),
                                       ),
+                                      /// start voting section
                                       IconButton(
                                         icon: Icon(Icons.thumb_up),
                                         onPressed: () => vote(snapshot.data.reference, recipes[index].documentID)
@@ -155,6 +156,7 @@ class _GroupPageState extends State<GroupPage> {
                                           ),
                                         ),
                                       ),
+                                      /// end
                                     ],
                                   ),
                                   decoration: BoxDecoration(

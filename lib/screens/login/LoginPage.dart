@@ -20,12 +20,17 @@ class _LoginPageState extends State<LoginPage> {
       child: Row(
         children: <Widget>[
           Container(
-            width: 48,
-            child: Image.asset('images/google_logo.jpg', height: 32),
+            padding: EdgeInsets.all(4.0),
+            child: CircleAvatar(
+              backgroundImage: AssetImage('images/google_logo.jpg'),
+            ),
           ),
-          Text(label,
-            style: TextStyle(
-              color: Colors.white,
+          Container(
+            padding: EdgeInsets.only(left: 4.0),
+            child: Text(label,
+              style: TextStyle(
+                color: Colors.white,
+              ),
             ),
           ),
         ],
