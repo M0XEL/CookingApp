@@ -3,8 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-// TODO: add minutes after Headline
-
 class PreparationCard extends StatefulWidget {
   final recipeId;
   PreparationCard(this.recipeId);
