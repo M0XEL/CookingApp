@@ -93,13 +93,33 @@ class _PreparationCardState extends State<PreparationCard> {
 
   buildCardHeadline(String title) => ListTile(
     leading: Container(width: 40.0),
-    title: Text(title,
-      style: TextStyle(
-        fontSize: 24.0,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 1.4,
-        color: Colors.orangeAccent,
-      ),
+    title: Row(
+      children: <Widget>[
+        Text(title,
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.4,
+            color: Colors.orangeAccent,
+          ),
+        ),
+        Expanded(child: Container()),
+        FutureBuilder(
+          future: Firestore.instance.collection('recipes').document(recipeId).get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return Text(snapshot.data['duration'] != null ? '~' + snapshot.data['duration'].toString() + 'min' : '',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              );
+            }
+            return Container();
+          },
+        ),
+      ],
     ),
+    
   );
 }

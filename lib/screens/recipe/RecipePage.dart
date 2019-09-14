@@ -37,14 +37,14 @@ class _RecipePageState extends State<RecipePage> {
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
-                actions: <Widget>[
+                /*actions: <Widget>[
                   IconButton(
                     icon: Icon(Icons.share,
                       color: Colors.white
                     ),
                     onPressed: null,
                   )
-                ],
+                ],*/
                 flexibleSpace: FlexibleSpaceBar(
                   title: FutureBuilder(
                     future: Firestore.instance.collection('recipes').document(recipeId).get(),
@@ -104,7 +104,7 @@ class _RecipePageState extends State<RecipePage> {
             ],
           ),
         ),
-        buildStartCookingButton(),
+        //buildStartCookingButton(),
       ],
     ),
   );
@@ -113,16 +113,16 @@ class _RecipePageState extends State<RecipePage> {
     child: ButtonBar(
       alignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        IconButton(
+        /*IconButton(
           icon: Icon(Icons.book),
           onPressed: null,
         ),
         IconButton(
           icon: Icon(Icons.add_shopping_cart),
           onPressed: null,
-        ),
+        ),*/
         IconButton(
-          icon: Icon(Icons.calendar_today),
+          icon: Icon(Icons.schedule),
           onPressed: () => showGroupSelection()
         ),
       ],

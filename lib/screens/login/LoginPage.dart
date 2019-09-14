@@ -135,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
   );
 
   updateDatabase(FirebaseUser user) {
-    Firestore.instance.collection('users').document().get().then((document) {
+    Firestore.instance.collection('users').document(user.uid).get().then((document) {
       if (!document.exists) {
         Firestore.instance.collection('users').document(user.uid).setData({
           'name': user.displayName,

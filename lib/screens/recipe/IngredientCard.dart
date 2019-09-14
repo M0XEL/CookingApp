@@ -60,7 +60,6 @@ class _IngredientCardState extends State<IngredientCard> {
                     ingredient.amount = document['amount'];
                     ingredient.unit = document['unit'];
                     ingredients.add(ingredient);
-                    print(ingredient.amount);
                   });
                   if (servings == 0) {
                     DocumentSnapshot document5 = snapshot.data[1].documents.firstWhere((document4) {

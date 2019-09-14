@@ -131,32 +131,49 @@ class _GroupPageState extends State<GroupPage> {
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Container(
-                                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                                        child: Text(recipeIds[recipes[index].documentID].toString(),
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 24.0,
-                                            fontWeight: FontWeight.bold,
+                                      Row(
+                                        children: <Widget>[
+                                          Container(
+                                            margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                            child: Text(recipes[index].data['name'] != null ? recipes[index].data['name'] : '',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24.0,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                      /// start voting section
-                                      IconButton(
-                                        icon: Icon(Icons.thumb_up),
-                                        onPressed: () => vote(snapshot.data.reference, recipes[index].documentID)
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                        child: Text(recipes[index].data['name'] != null ? recipes[index].data['name'] : '',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 24.0,
-                                            fontWeight: FontWeight.bold,
+                                          Expanded(child: Container()),
+                                          Container(
+                                            margin: EdgeInsets.only(bottom: 8.0),
+                                            decoration: BoxDecoration(
+                                              color: Color.fromARGB(100, 0, 0, 0),
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(32.0),
+                                                bottomLeft: Radius.circular(32.0),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: <Widget>[
+                                                Container(
+                                                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                                                  child: Text(recipeIds[recipes[index].documentID].toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 24.0,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: Icon(Icons.thumb_up, color: Colors.green),
+                                                  onPressed: () => vote(snapshot.data.reference, recipes[index].documentID)
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                      /// end
+                                        ],
+                                      )
                                     ],
                                   ),
                                   decoration: BoxDecoration(
@@ -239,7 +256,6 @@ class _GroupPageState extends State<GroupPage> {
                       }
                       else {
                         index--;
-                        print(index);
                         return Container(
                           decoration: BoxDecoration(
                             color: selectedGroup.documentID == groups[index].documentID ? Colors.orangeAccent[100] : null,
