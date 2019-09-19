@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:CookingApp/screens/recipe/RecipePage.dart';
 import 'package:CookingApp/components/MyBottomNavigationBar.dart';
 import 'package:CookingApp/screens/login/LoginPage.dart';
+import 'package:CookingApp/screens/search/RecipeCard.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -107,38 +108,7 @@ class _SearchPageState extends State<SearchPage> {
                                 index--;
                                 return MaterialButton(
                                   padding: EdgeInsets.all(0.0),
-                                  child: Card(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: Container(
-                                        height: MediaQuery.of(context).size.width * (9/16),
-                                        width: MediaQuery.of(context).size.width,
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Container(
-                                              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                                              child: Text(recipes[index].data['name'],
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 24.0,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: recipes[index].data['imageUrl'] != null ? NetworkImage(recipes[index].data['imageUrl']) : AssetImage('images/pizza.jpg'),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  child: buildRecipeCard(context, recipes[index]),
                                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => RecipePage(recipes[index].documentID))),
                                 );
                               }
@@ -162,40 +132,67 @@ class _SearchPageState extends State<SearchPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            MaterialButton(
+                            Container(
+                              height: 52.0,
+                              width: MediaQuery.of(context).size.width / 3,
                               color: recipeType == 'normal' ? Colors.orangeAccent : null,
-                              child: Text('Gerichte'),
-                              onPressed: () => setState(() => recipeType = recipeType == 'normal' ? '' : 'normal'),
+                              child: MaterialButton(
+                                child: Text('Gerichte'),
+                                onPressed: () => setState(() => recipeType = recipeType == 'normal' ? '' : 'normal'),
+                              ),
                             ),
-                            MaterialButton(
-                              child: Text('Desserts'),
-                              onPressed: null,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: recipeType == '2' ? Colors.orangeAccent : null,
+                                border: Border(
+                                  left: BorderSide(
+                                    color: Colors.grey[300],
+                                    width: 0.5,
+                                  ),
+                                  right: BorderSide(
+                                    color: Colors.grey[300],
+                                    width: 0.5,
+                                  ),
+                                ),
+                              ),
+                              height: 52.0,
+                              width: MediaQuery.of(context).size.width / 3,
+                              child: MaterialButton(
+                                child: Text('Desserts'),
+                                onPressed: () => setState(() => recipeType = recipeType == '2' ? '' : '2'),
+                              ),
                             ),
-                            MaterialButton(
-                              child: Text('Getränke'),
-                              onPressed: null,
+                            Container(
+                              height: 52.0,
+                              width: MediaQuery.of(context).size.width / 3,
+                              color: recipeType == '3' ? Colors.orangeAccent : null,
+                              child: MaterialButton(
+                                child: Text('Getränke'),
+                                onPressed: () => setState(() => recipeType = recipeType == '3' ? '' : '3'),
+                              ),
                             ),
                           ],
                         ),
+                        Divider(height: 0),
                         Row(
                           children: <Widget>[
                             MaterialButton(
-                              color: isHighCarb ? Colors.orangeAccent : null,
                               child: Chip(
+                                backgroundColor: isHighCarb ? Colors.orangeAccent : null,
                                 label: Text('High Carb'),
                               ),
                               onPressed: () => setState(() => isHighCarb = isHighCarb ? false : true),
                             ),
                             MaterialButton(
-                              color: isVegetarian ? Colors.orangeAccent : null,
                               child: Chip(
+                                backgroundColor: isVegetarian ? Colors.orangeAccent : null,
                                 label: Text('Vegetarisch'),
                               ),
                               onPressed: () => setState(() => isVegetarian = isVegetarian ? false : true),
                             ),
                             MaterialButton(
-                              color: isMeat ? Colors.orangeAccent : null,
                               child: Chip(
+                                backgroundColor: isMeat ? Colors.orangeAccent : null,
                                 label: Text('Fleisch'),
                               ),
                               onPressed: () => setState(() => isMeat = isMeat ? false : true),
@@ -211,18 +208,89 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                   ),
                   MaterialButton(
-                    color: Colors.orangeAccent,
-                    child: Text('Suchen'),
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 8.0),
+                      height: 48.0,
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(40.0),
+                      ),
+                      child: Center(
+                        child: Text('SUCHEN',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                     onPressed: () async {
-                      QuerySnapshot snapshot = await Firestore.instance.collection('recipes')
-                      .where('type', isEqualTo: recipeType == '' ? null : recipeType)
-                      .where('filter', arrayContains: isHighCarb ? 'high_carb' : null)
-                      .where('filter', arrayContains: isVegetarian ? 'vegetarian' : null)
-                      .where('filter', arrayContains: isMeat ? 'meat' : null)
-                      .getDocuments();
+                      List<DocumentSnapshot> oldList = List<DocumentSnapshot>();
+                      List<DocumentSnapshot> newList = List<DocumentSnapshot>();
+
+                      QuerySnapshot result = await Firestore.instance.collection('recipes').getDocuments();
+                      newList.addAll(result.documents);
+
+                      /// search type
+                      if (recipeType != '') {
+                        result = await Firestore.instance.collection('recipes').where('type', isEqualTo: recipeType).getDocuments();
+                        newList.clear();
+                        newList.addAll(result.documents);
+                      }
+
+                      /// search filter: high carb
+                      if (isHighCarb) {
+                        QuerySnapshot result = await Firestore.instance.collection('recipes').where('filter', arrayContains: 'high_carb').getDocuments();
+                        
+                        oldList.clear();
+                        oldList.addAll(newList);
+                        newList.clear();
+                        
+                        oldList.forEach((query1) {
+                          result.documents.forEach((query2) {
+                            if (query1.documentID == query2.documentID) {
+                              newList.add(query1);
+                            }
+                          });
+                        });
+                      }
+
+                      /// search filter: vegetarian
+                      if (isVegetarian) {
+                        result = await Firestore.instance.collection('recipes').where('filter', arrayContains: 'vegetarian').getDocuments();
+
+                        oldList.clear();
+                        oldList.addAll(newList);
+                        newList.clear();
+
+                        oldList.forEach((query1) {
+                          result.documents.forEach((query2) {
+                            if (query1.documentID == query2.documentID) {
+                              newList.add(query1);
+                            }
+                          });
+                        });
+                      }
+
+                      /// search filter: meat
+                      if (isMeat) {
+                        result = await Firestore.instance.collection('recipes').where('filter', arrayContains: 'meat').getDocuments();
+                        
+                        oldList.clear();
+                        oldList.addAll(newList);
+                        newList.clear();
+                        
+                        oldList.forEach((query1) {
+                          result.documents.forEach((query2) {
+                            if (query1.documentID == query2.documentID) {
+                              newList.add(query1);
+                            }
+                          });
+                        });
+                      }
+                      
                       setState(() {
                         recipesByFilter.clear();
-                        recipesByFilter.addAll(snapshot.documents);
+                        recipesByFilter.addAll(newList);
                         bodyType = BodyType.recipe;
                         searchViaText = false;
                       });
@@ -290,38 +358,7 @@ class _SearchPageState extends State<SearchPage> {
                   itemBuilder: (BuildContext context, int index) {
                     return MaterialButton(
                       padding: EdgeInsets.all(0.0),
-                      child: Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Container(
-                            height: MediaQuery.of(context).size.width * (9/16),
-                            width: MediaQuery.of(context).size.width,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                                  child: Text(recipes[index]['name'],
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: recipes[index].data['imageUrl'] != null ? NetworkImage(recipes[index].data['imageUrl']) : AssetImage('images/pizza.jpg'),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      child: buildRecipeCard(context, recipes[index]),
                       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => RecipePage(recipes[index].documentID))),
                     );
                   },

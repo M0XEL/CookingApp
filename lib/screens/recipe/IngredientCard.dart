@@ -7,6 +7,7 @@ import 'dart:async';
 class Ingredient {
   String name;
   int amount;
+  String unit;
 }
 
 class IngredientCard extends StatefulWidget {
@@ -32,7 +33,6 @@ class _IngredientCardState extends State<IngredientCard> {
         FutureBuilder(
           future: Future.wait([
             Firestore.instance.collection('recipes').document(recipeId).collection('ingredients').getDocuments(),
-            Firestore.instance.collection('ingredients').getDocuments(),
             Firestore.instance.collection('recipes').getDocuments(),
           ]),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -56,15 +56,13 @@ class _IngredientCardState extends State<IngredientCard> {
                   ingredients.clear();
                   snapshot.data[0].documents.forEach((document) {
                     Ingredient ingredient = Ingredient();
+                    ingredient.name = document['name'];
                     ingredient.amount = document['amount'];
-                    DocumentSnapshot document3 = snapshot.data[1].documents.firstWhere((document2) {
-                      return document2.documentID == document['ingredientId'];
-                    });
-                    ingredient.name = document3['name'];
+                    ingredient.unit = document['unit'];
                     ingredients.add(ingredient);
                   });
                   if (servings == 0) {
-                    DocumentSnapshot document5 = snapshot.data[2].documents.firstWhere((document4) {
+                    DocumentSnapshot document5 = snapshot.data[1].documents.firstWhere((document4) {
                       return document4.documentID == recipeId;
                     });
                     servings = document5['servings'];
@@ -78,7 +76,7 @@ class _IngredientCardState extends State<IngredientCard> {
                           Container(
                             padding: EdgeInsets.only(right: 8.0),
                             width: MediaQuery.of(context).size.width * 0.4,
-                            child: Text((servings * ingredient.amount).toString() + 'g',
+                            child: Text((servings * ingredient.amount).toString() + ingredient.unit,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,

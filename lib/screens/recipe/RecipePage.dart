@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'PreparationCard.dart';
 import 'IngredientCard.dart';
+import 'package:CookingApp/services/firestore_add_recipe_to_group.dart';
 
 class RecipePage extends StatefulWidget {
   final String documentId;
@@ -28,7 +29,7 @@ class _RecipePageState extends State<RecipePage> {
           child: CustomScrollView(
             slivers: <Widget>[
               SliverAppBar(
-                expandedHeight: 195.0,
+                expandedHeight: MediaQuery.of(context).size.width * (9/16),
                 pinned: true,
                 leading: IconButton(
                   icon: Icon(Icons.clear,
@@ -36,17 +37,17 @@ class _RecipePageState extends State<RecipePage> {
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
-                actions: <Widget>[
+                /*actions: <Widget>[
                   IconButton(
                     icon: Icon(Icons.share,
                       color: Colors.white
                     ),
                     onPressed: null,
                   )
-                ],
+                ],*/
                 flexibleSpace: FlexibleSpaceBar(
                   title: FutureBuilder(
-                    future: Firestore.instance.collection('recipes').getDocuments(),
+                    future: Firestore.instance.collection('recipes').document(recipeId).get(),
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       switch (snapshot.connectionState) {
                         case ConnectionState.active:
@@ -60,11 +61,8 @@ class _RecipePageState extends State<RecipePage> {
                           break;
 
                         case ConnectionState.done:
-                          DocumentSnapshot document2 = snapshot.data.documents.firstWhere((document) {
-                            return document.documentID == recipeId;
-                          });
 
-                          return Text(document2['name'],
+                          return Text(snapshot.data['name'],
                             style: TextStyle(
                               color: Colors.white,
                             ),
@@ -77,21 +75,36 @@ class _RecipePageState extends State<RecipePage> {
                       return Container();
                     },
                   ),
-                  background: Image.asset('images/pizza.jpg'),
+                  background: FutureBuilder(
+                    future: Firestore.instance.collection('recipes').document(recipeId).get(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: snapshot.data['imageUrl'] != null ? NetworkImage(snapshot.data['imageUrl']) : AssetImage('images/pizza.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      }
+                      return Container();
+                    },
+                  ),
                 ),
               ),
               SliverList(
                 delegate: SliverChildListDelegate([
                   buildButtonCard(),
                   IngredientCard(recipeId),
-                  buildNutritionInfoCard(),
+                  //buildNutritionInfoCard(),
                   PreparationCard(recipeId),
                 ]),
               ),
             ],
           ),
         ),
-        buildStartCookingButton(),
+        //buildStartCookingButton(),
       ],
     ),
   );
@@ -100,16 +113,16 @@ class _RecipePageState extends State<RecipePage> {
     child: ButtonBar(
       alignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        IconButton(
+        /*IconButton(
           icon: Icon(Icons.book),
           onPressed: null,
         ),
         IconButton(
           icon: Icon(Icons.add_shopping_cart),
           onPressed: null,
-        ),
+        ),*/
         IconButton(
-          icon: Icon(Icons.calendar_today),
+          icon: Icon(Icons.schedule),
           onPressed: () => showGroupSelection()
         ),
       ],
@@ -150,7 +163,7 @@ class _RecipePageState extends State<RecipePage> {
                               title: Text(groups[index].data['name'] != null ? groups[index].data['name'] : []),
                             ),
                             onPressed: () {
-                              addRecipeToGroup(groups[index]);
+                              addRecipeToGroup(recipeId, groups[index]);
                               Navigator.pop(context);
                             }
                           );
@@ -166,35 +179,6 @@ class _RecipePageState extends State<RecipePage> {
         }
       );
     });
-  });
-
-  addRecipeToGroup(DocumentSnapshot group) => Firestore.instance.collection('recipe_votes').document(group.documentID).collection('deadlines').document('today').get().then((document) {
-    if (document.exists) {
-      Firestore.instance.runTransaction((transaction) async {
-        DocumentSnapshot freshSnapshot = await transaction.get(document.reference);
-        Map<String, int> recipes = Map<String, int>();
-        recipes.addAll(freshSnapshot['recipes'] != null ? freshSnapshot['recipes'].cast<String, int>() : []);
-        print(recipes);
-        if (recipes.containsKey(recipeId)) {
-          transaction.update(document.reference, {'recipes': recipes});
-        }
-        else {
-          List<MapEntry<String, int>> l = List<MapEntry<String, int>>();
-          l.add(MapEntry(recipeId, 0));
-          recipes.addEntries(l);
-          transaction.update(document.reference, {'recipes': recipes});
-        }
-      });
-    }
-    else {
-      Firestore.instance.runTransaction((transaction) async {
-        Map<String, int> recipes = Map<String, int>();
-        List<MapEntry<String, int>> l = List<MapEntry<String, int>>();
-        l.add(MapEntry(recipeId, 0));
-        recipes.addEntries(l);
-        transaction.set(document.reference, {'recipes': recipes});
-      });
-    }
   });
 
   buildNutritionInfoCard() {

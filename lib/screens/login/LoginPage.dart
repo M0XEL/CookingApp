@@ -20,22 +20,34 @@ class _LoginPageState extends State<LoginPage> {
       child: Row(
         children: <Widget>[
           Container(
-            width: 48,
-            child: Image.asset('images/google_logo.jpg', height: 32),
+            padding: EdgeInsets.all(4.0),
+            child: CircleAvatar(
+              backgroundImage: AssetImage('images/google_logo.jpg'),
+            ),
           ),
-          Text(label,
-            style: TextStyle(
-              color: Colors.white,
+          Container(
+            padding: EdgeInsets.only(left: 4.0),
+            child: Text(label,
+              style: TextStyle(
+                color: Colors.white,
+              ),
             ),
           ),
         ],
       ),
     ),
-    onPressed: () => action(),
+    onPressed: () {
+      action();
+      showDialog(
+        context: context,
+        builder: (context) => Center(child: CircularProgressIndicator()),
+      );
+    },
   );
 
   /*signInAnonymously() {
     FirebaseAuth.instance.signInAnonymously().then((user) {
+      updateDatabase(user);
       updateDatabase(user);
       Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
       /*SharedPreferences.getInstance().then((sharedPreferences) {
@@ -47,8 +59,20 @@ class _LoginPageState extends State<LoginPage> {
 
   //signInWithEmailAndPassword() => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LogInWithEmailPage(updateDatabase)));
 
-  signInWithGoogle() {
-    GoogleSignIn().signIn().then((user) {
+  signInWithGoogle() async {
+    final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final FirebaseUser user = await FirebaseAuth.instance.signInWithCredential(credential);
+    updateDatabase(user);
+    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
+
+    /*GoogleSignIn().signIn().then((user) {
       user.authentication.then((userAuthenticationData) {
         AuthCredential credential = GoogleAuthProvider.getCredential(
           accessToken: userAuthenticationData.accessToken,
@@ -59,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
         });
       });
-    });
+    });*/
   }
 
   @override
@@ -111,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
   );
 
   updateDatabase(FirebaseUser user) {
-    Firestore.instance.collection('users').document().get().then((document) {
+    Firestore.instance.collection('users').document(user.uid).get().then((document) {
       if (!document.exists) {
         Firestore.instance.collection('users').document(user.uid).setData({
           'name': user.displayName,
