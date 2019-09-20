@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
       idToken: googleAuth.idToken,
     );
 
-    final FirebaseUser user = await FirebaseAuth.instance.signInWithCredential(credential);
+    final FirebaseUser user = (await FirebaseAuth.instance.signInWithCredential(credential)).user;
     updateDatabase(user);
     Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SearchPage()));
 
