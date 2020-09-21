@@ -1,3 +1,4 @@
+import 'package:CookingApp/screens/login/LandingPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/login/LoginPage.dart';
@@ -12,8 +13,8 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'CookingApp',
-        theme: ThemeData(primarySwatch: Colors.orange),
-        home: LoginPage(),
-      );
+    title: 'CookingApp',
+    theme: ThemeData(primarySwatch: Colors.orange),
+    home: LandingPage(),
+  );
 }
