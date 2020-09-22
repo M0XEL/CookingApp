@@ -6,13 +6,15 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: RaisedButton(
-          child: Text('Sign out'),
-          color: Colors.red,
-          onPressed: _signOut,
-        ),
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: Icon(Icons.phone_locked),
+            onPressed: _signOut,
+          )
+        ],
       ),
+      body: Center(),
     );
   }
 
