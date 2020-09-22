@@ -9,6 +9,7 @@ class HomePage extends StatelessWidget {
       body: Center(
         child: RaisedButton(
           child: Text('Sign out'),
+          color: Colors.red,
           onPressed: _signOut,
         ),
       ),

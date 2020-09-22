@@ -16,6 +16,7 @@ class LoginPage extends StatelessWidget {
       body: Center(
         child: RaisedButton(
           child: Text('Sign in'),
+          color: Colors.green,
           onPressed: _signInAnonymously,
         ),
       ),
