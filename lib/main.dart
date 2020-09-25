@@ -1,7 +1,7 @@
-import 'package:CookingApp/screens/login/LandingPage.dart';
+import 'package:CookingApp/new/LandingPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'screens/login/LoginPage.dart';
+import 'new/LoginPage.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
