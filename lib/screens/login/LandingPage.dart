@@ -1,4 +1,5 @@
 import 'package:CookingApp/screens/search/SearchPage.dart';
+import '../search/SearchPage.dart';
 import 'LoginPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class LandingPage extends StatelessWidget {
           if (user == null) {
             return LoginPage();
           }
-          return HomePage();
+          return SearchPage();
         } else {
           return Scaffold(
             body: Center(
