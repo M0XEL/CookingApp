@@ -40,6 +40,33 @@ class RecipePage extends StatelessWidget {
     );
   }
 
+  Widget _buildCategoryGroup() {
+    return Container(
+      child: Column(
+        children: [
+          Text('headline'),
+          FutureBuilder(
+            future: Firestore.instance
+                .collection('recipes')
+                .where('type', isEqualTo: 'trend')
+                .getDocuments(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasData) {
+                  print(snapshot.data);
+                  return Container();
+                }
+              }
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          )
+        ],
+      ),
+    );
+  }
+
   Widget _buildCardList(List<DocumentSnapshot> recipes) {
     return Container(
       height: 300,
