@@ -34,8 +34,8 @@ build/
 **/android/captures/
 **/android/gradlew
 **/android/gradlew.bat
-**/android/local.properties
-**/android/key.properties
+#**/android/local.properties
+#**/android/key.properties
 **/android/**/GeneratedPluginRegistrant.java
 
 # iOS/XCode related
@@ -72,4 +72,4 @@ build/
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
 # Keystore
-*.jks
+#*.jks

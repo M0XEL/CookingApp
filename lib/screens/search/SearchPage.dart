@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:async';
 import 'package:CookingApp/screens/recipe/RecipePage.dart';
 import 'package:CookingApp/components/MyBottomNavigationBar.dart';
-import 'package:CookingApp/screens/login/LoginPage.dart';
+import 'package:CookingApp/new/LoginPage.dart';
 import 'package:CookingApp/screens/search/RecipeCard.dart';
 
 class SearchPage extends StatefulWidget {
