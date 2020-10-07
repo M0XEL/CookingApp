@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:CookingApp/new/SchedulePage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,9 +21,14 @@ class HomePage extends StatelessWidget {
             color: Colors.blue,
           );
           body = RecipePage();
-        } else {
+        } else if (snapshot.data == 1) {
           body = Container(
             color: Colors.purple,
+          );
+          body = SchedulePage();
+        } else {
+          body = Container(
+            color: Colors.green,
           );
         }
 
@@ -45,15 +51,21 @@ class HomePage extends StatelessWidget {
                 label: 'Rezepte',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.whatshot),
-                label: 'Rezepte',
+                icon: Icon(Icons.calendar_today),
+                label: 'Planen',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.group),
+                label: 'Sozial',
               ),
             ],
             onTap: (index) {
               if (index == 0) {
                 controller.add(0);
-              } else {
+              } else if (index == 1) {
                 controller.add(1);
+              } else {
+                controller.add(2);
               }
             },
           ),
